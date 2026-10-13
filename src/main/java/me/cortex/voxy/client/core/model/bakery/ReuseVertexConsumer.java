@@ -89,8 +89,9 @@ public final class ReuseVertexConsumer implements VertexConsumer {
         // 1.20.1: required by VertexConsumer
     }
 
-    public void normal(float x, float y, float z) {
+    public VertexConsumer normal(float x, float y, float z) {
         // 1.20.1: required by VertexConsumer
+        return this;
     }
 
     public void unsetDefaultColor() {
