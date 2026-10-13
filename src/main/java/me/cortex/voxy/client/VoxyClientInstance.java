@@ -30,7 +30,6 @@ public class VoxyClientInstance extends VoxyInstance {
             var basePath = this.basePath = getBasePath().normalize();
             this.config = StorageConfigUtil.getCreateStorageConfig(Config.class, c->c.version==1&&c.sectionStorageConfig!=null, ()->DEFAULT_STORAGE_CONFIG, basePath);
         }
-        super();
         this.updateDedicatedThreads();
     }
 
@@ -115,11 +114,7 @@ public class VoxyClientInstance extends VoxyInstance {
                     Logger.error("Server info null");
                     basePath = basePath.resolve("UNKNOWN");
                 } else {
-                    if (info.isRealm()) {
-                        basePath = basePath.resolve("realms");
-                    } else {
-                        basePath = basePath.resolve(info.ip.replace(":", "_"));
-                    }
+                    basePath = basePath.resolve(info.ip.replace(":", "_"));
                 }
             }
         }
