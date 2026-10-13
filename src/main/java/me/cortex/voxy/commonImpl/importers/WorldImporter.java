@@ -49,7 +49,7 @@ public class WorldImporter implements IDataImporter {
     private final WorldEngine world;
     private final PalettedContainerRO<Holder<Biome>> defaultBiomeProvider;
     private final Codec<PalettedContainerRO<Holder<Biome>>> biomeCodec;
-    private final Codec<PalettedContainerRO<BlockState>> blockStateCodec;
+    private final Codec<PalettedContainer<BlockState>> blockStateCodec;
     private final AtomicInteger estimatedTotalChunks = new AtomicInteger();//Slowly converges to the true value
     private final AtomicInteger totalChunks = new AtomicInteger();
     private final AtomicInteger chunksProcessed = new AtomicInteger();
@@ -79,7 +79,7 @@ public class WorldImporter implements IDataImporter {
             net.minecraft.world.level.chunk.PalettedContainer.Strategy.SECTION_BIOMES,
             defaultBiomeHolder
         );
-        this.blockStateCodec = net.minecraft.world.level.chunk.PalettedContainer.codecRO(
+        this.blockStateCodec = net.minecraft.world.level.chunk.PalettedContainer.codec(
             net.minecraft.world.level.block.Block.BLOCK_STATE_REGISTRY,
             net.minecraft.world.level.block.state.BlockState.CODEC,
             net.minecraft.world.level.chunk.PalettedContainer.Strategy.SECTION_STATES,
