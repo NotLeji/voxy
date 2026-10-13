@@ -26,8 +26,20 @@ public class LightMapHelper {
         glBindTextureUnit(lightingIndex, getLightmapTextureId());
     }
 
+    private static java.lang.reflect.Field lightTextureField;
+
     public static int getLightmapTextureId() {
-        // 1.20.1: get texture ID from LightTexture
-        return Minecraft.getInstance().gameRenderer.lightTexture().lightTexture.getId();
+        // 1.20.1: LightTexture.lightTexture is private, access via reflection
+        try {
+            if (lightTextureField == null) {
+                lightTextureField = net.minecraft.client.renderer.LightTexture.class.getDeclaredField("lightTexture");
+                lightTextureField.setAccessible(true);
+            }
+            var dynamicTexture = (net.minecraft.client.renderer.texture.DynamicTexture)
+                lightTextureField.get(Minecraft.getInstance().gameRenderer.lightTexture());
+            return dynamicTexture.getId();
+        } catch (Exception e) {
+            return 0;
+        }
     }
 }
