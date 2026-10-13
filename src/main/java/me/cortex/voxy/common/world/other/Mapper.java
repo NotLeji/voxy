@@ -390,11 +390,11 @@ public class Mapper {
                 }
                 var bsc = compound.getCompound("block_state");
                 var state = BlockState.CODEC.parse(NbtOps.INSTANCE, bsc);
-                if (state.isError()) {
+                if (state.error().isPresent()) {
                     Logger.info("Could not decode blockstate, attempting fixes, error: "+ state.error().toString());
                     bsc = (CompoundTag) DataFixers.getDataFixer().update(References.BLOCK_STATE, new Dynamic<>(NbtOps.INSTANCE,bsc),0, SharedConstants.getCurrentVersion().getDataVersion().getVersion()).getValue();
                     state = BlockState.CODEC.parse(NbtOps.INSTANCE, bsc);
-                    if (state.isError()) {
+                    if (state.error().isPresent()) {
                         Logger.error("Could not decode blockstate setting to air. id:" + id + " error: " + state.error().toString());
                         return new StateEntry(id, Blocks.AIR.defaultBlockState());
                     } else {
