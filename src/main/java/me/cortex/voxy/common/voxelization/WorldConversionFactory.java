@@ -2,7 +2,6 @@ package me.cortex.voxy.common.voxelization;
 
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import me.cortex.voxy.common.world.other.Mapper;
-import net.caffeinemc.mods.lithium.common.world.chunk.LithiumHashPalette;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Holder;
 import net.minecraft.util.SimpleBitStorage;
@@ -35,23 +34,9 @@ public class WorldConversionFactory {
     //TODO: create a mapping for world/mapper -> local mapping
     private static final ThreadLocal<Cache> THREAD_LOCAL = ThreadLocal.withInitial(Cache::new);
 
+    // 1.20.1 backport: Lithium is runtime-only, skip the Lithium palette optimization
+    // (vanilla setupLocalPalette handles all palette types)
     private static boolean setupLithiumLocalPallet(Palette<BlockState> vp, Reference2IntOpenHashMap<BlockState> blockCache, Mapper mapper, int[] pc)  {
-        if (vp instanceof LithiumHashPalette<BlockState>) {
-            for (int i = 0; i < vp.getSize(); i++) {
-                BlockState state = null;
-                int blockId = -1;
-                try { state = vp.valueFor(i); } catch (Exception e) {}
-                if (state != null) {
-                    blockId = blockCache.getOrDefault(state, -1);
-                    if (blockId == -1) {
-                        blockId = mapper.getIdForBlockState(state);
-                        blockCache.put(state, blockId);
-                    }
-                }
-                pc[i] = blockId;
-            }
-            return true;
-        }
         return false;
     }
     private static int setupLocalPalette(Palette<BlockState> vp, Reference2IntOpenHashMap<BlockState> blockCache, Mapper mapper, int[] pc) {
