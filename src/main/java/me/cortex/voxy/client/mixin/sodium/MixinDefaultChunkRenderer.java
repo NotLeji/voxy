@@ -16,7 +16,7 @@ import me.jellysquid.mods.sodium.client.render.chunk.terrain.DefaultTerrainRende
 import me.jellysquid.mods.sodium.client.render.chunk.terrain.TerrainRenderPass;
 import me.jellysquid.mods.sodium.client.render.chunk.vertex.format.ChunkVertexType;
 import me.jellysquid.mods.sodium.client.render.viewport.CameraTransform;
-import me.jellysquid.mods.sodium.client.util.FogParameters;
+import me.cortex.voxy.client.core.util.FogParameters;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
