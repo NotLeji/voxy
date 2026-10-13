@@ -821,6 +821,11 @@ public class ModelFactory {
             }
 
             @Override
+            public int getMinBuildHeight() {
+                return -64;
+            }
+
+            @Override
             public LevelLightEngine getLightEngine() {
                 return LevelLightEngine.EMPTY;
             }
@@ -872,6 +877,11 @@ public class ModelFactory {
             @Override
             public float getShade(net.minecraft.core.Direction direction, boolean shade) {
                 return 1.0f;
+            }
+
+            @Override
+            public int getMinBuildHeight() {
+                return -64;
             }
 
             @Override
