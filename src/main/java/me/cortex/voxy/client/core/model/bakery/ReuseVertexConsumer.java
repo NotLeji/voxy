@@ -89,6 +89,10 @@ public final class ReuseVertexConsumer implements VertexConsumer {
         // 1.20.1: required by VertexConsumer
     }
 
+    public VertexConsumer color(int r, int g, int b, int a) {
+        return this;
+    }
+
     public VertexConsumer uv(float u, float v) {
         return this;
     }
@@ -126,7 +130,7 @@ public final class ReuseVertexConsumer implements VertexConsumer {
     }
 
     public ReuseVertexConsumer quad(BakedQuad quad, int metadata) {
-        this.anyShaded |= quad.hasAmbientOcclusion();
+        this.anyShaded |= quad.isShade();
         // 1.20.1: MipmapStrategy doesn't exist; skip dark cutout detection
         this.ensureCanPut();
         int[] vertices = quad.getVertices();
