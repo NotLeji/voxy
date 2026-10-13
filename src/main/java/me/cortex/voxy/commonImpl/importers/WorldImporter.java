@@ -99,8 +99,6 @@ public class WorldImporter implements IDataImporter {
         };
 
         // 1.20.1: Create codecs directly (PalettedContainerFactory removed)
-        var biomeRegistry = mcWorld.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.BIOME);
-        var blockRegistry = mcWorld.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.BLOCK);
         this.biomeCodec = net.minecraft.world.level.chunk.PalettedContainer.codecRO(
             biomeRegistry.asHolderIdMap(),
             biomeRegistry.holderByNameCodec(),
@@ -108,7 +106,7 @@ public class WorldImporter implements IDataImporter {
             defaultBiomeHolder
         );
         this.blockStateCodec = net.minecraft.world.level.chunk.PalettedContainer.codecRO(
-            blockRegistry.asHolderIdMap(),
+            net.minecraft.world.level.block.Block.BLOCK_STATE_REGISTRY,
             net.minecraft.world.level.block.state.BlockState.CODEC,
             net.minecraft.world.level.chunk.PalettedContainer.Strategy.SECTION_STATES,
             net.minecraft.world.level.block.Blocks.AIR.defaultBlockState()
@@ -186,7 +184,7 @@ public class WorldImporter implements IDataImporter {
     public void importZippedRegionDirectoryAsync(File zip, String innerDirectory) {
         try {
             innerDirectory = innerDirectory.replace("\\\\", "\\").replace("\\", "/");
-            var file = ZipFile.builder().setFile(zip).get();
+            var file = new ZipFile(zip);
             ArrayList<ZipArchiveEntry> regions = new ArrayList<>();
             for (var e = file.getEntries(); e.hasMoreElements();) {
                 var entry = e.nextElement();
