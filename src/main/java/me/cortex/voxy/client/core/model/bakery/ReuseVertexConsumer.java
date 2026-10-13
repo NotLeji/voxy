@@ -89,6 +89,10 @@ public final class ReuseVertexConsumer implements VertexConsumer {
         // 1.20.1: required by VertexConsumer
     }
 
+    public VertexConsumer uv(float u, float v) {
+        return this;
+    }
+
     public VertexConsumer overlayCoords(int u, int v) {
         return this;
     }
