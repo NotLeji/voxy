@@ -70,7 +70,7 @@ public class ModelFactory {
         }
     }
 
-    private final Biome DEFAULT_BIOME = Minecraft.getInstance().level.registryAccess().registryOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS).value();
+    private final Biome DEFAULT_BIOME = Minecraft.getInstance().level.registryAccess().registryOrThrow(Registries.BIOME).get(Biomes.PLAINS);
 
     public final SoftwareModelTextureBakery bakery2;
     private final long bakeScratchBuffer = MemoryUtil.nmemAlloc(MODEL_TEXTURE_SIZE*MODEL_TEXTURE_SIZE*8*6);
@@ -311,7 +311,7 @@ public class ModelFactory {
             if (mcbiomeEntry == null) {
                 Logger.warn("Could not find biome: " + biomeEntry.biome + " using default");
             }
-            var res = this.addBiome0(biomeEntry.id, mcbiomeEntry.isPresent()?mcbiomeEntry.orElseThrow().value():DEFAULT_BIOME);
+            var res = this.addBiome0(biomeEntry.id, mcbiomeEntry != null ? mcbiomeEntry.value() : DEFAULT_BIOME);
             if (res != null) {
                 this.uploadResults.add(res);
             }
