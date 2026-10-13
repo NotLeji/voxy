@@ -92,6 +92,10 @@ public class WorldImporter implements IDataImporter {
                 return predicate.test(defaultBiomeHolder);
             }
 
+            @Override
+            public void pack(net.minecraft.core.IdMap<Holder<Biome>> idMap, net.minecraft.world.level.chunk.PalettedContainer.Strategy strategy) {
+            }
+
 
 
 
@@ -434,20 +438,20 @@ public class WorldImporter implements IDataImporter {
         }
 
         //Dont process non full chunk sections
-        var status = ChunkStatus.byName(chunk.getStringOr("Status", null));
+        var status = chunk.contains("Status") ? ChunkStatus.byName(chunk.getString("Status")) : null;
         if (status != ChunkStatus.FULL && status != ChunkStatus.EMPTY) {//We also import empty since they are from data upgrade
             this.totalChunks.decrementAndGet();
             return;
         }
 
         try {
-            int x = chunk.getIntOr("xPos", Integer.MIN_VALUE);
-            int z = chunk.getIntOr("zPos", Integer.MIN_VALUE);
+            int x = chunk.contains("xPos") ? chunk.getInt("xPos") : Integer.MIN_VALUE;
+            int z = chunk.contains("zPos") ? chunk.getInt("zPos") : Integer.MIN_VALUE;
             if (x>>5 != regionX || z>>5 != regionZ) {
                 Logger.error("Chunk position is not located in correct region, expected: (" + regionX + ", " + regionZ+"), got: " + "(" + (x>>5) + ", " + (z>>5)+"), importing anyway");
             }
 
-            for (var sectionE : chunk.getList("sections").orElseThrow()) {
+            for (var sectionE : chunk.getList("sections", 10)) {
                 var section = (CompoundTag) sectionE;
                 int y = section.getIntOr("Y", Integer.MIN_VALUE);
                 this.importSectionNBT(x, y, z, section);
