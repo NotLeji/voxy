@@ -816,6 +816,11 @@ public class ModelFactory {
             }
 
             @Override
+            public float getShade(net.minecraft.core.Direction direction, boolean shade) {
+                return 1.0f;
+            }
+
+            @Override
             public LevelLightEngine getLightEngine() {
                 return LevelLightEngine.EMPTY;
             }
@@ -842,12 +847,10 @@ public class ModelFactory {
                 return state.getFluidState();
             }
 
-            @Override
             public int getHeight() {
                 return 0;
             }
 
-            @Override
             public int getMinY() {
                 return 0;
             }
@@ -864,6 +867,11 @@ public class ModelFactory {
             @Override
             public int getBrightness(LightLayer type, BlockPos pos) {
                 return 0;
+            }
+
+            @Override
+            public float getShade(net.minecraft.core.Direction direction, boolean shade) {
+                return 1.0f;
             }
 
             @Override
@@ -894,12 +902,10 @@ public class ModelFactory {
                 return state.getFluidState();
             }
 
-            @Override
             public int getHeight() {
                 return 0;
             }
 
-            @Override
             public int getMinY() {
                 return 0;
             }
