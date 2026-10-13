@@ -6,28 +6,32 @@ import me.cortex.voxy.client.core.IVoxyRenderSystemHolder;
 import me.cortex.voxy.client.core.VoxyRenderSystem;
 import me.cortex.voxy.client.core.util.IrisUtil;
 import me.cortex.voxy.common.world.service.VoxelIngestService;
+import me.jellysquid.mods.sodium.client.gl.device.CommandList;
 import me.jellysquid.mods.sodium.client.render.chunk.RenderSection;
+import me.jellysquid.mods.sodium.client.render.chunk.RenderSectionFlags;
 import me.jellysquid.mods.sodium.client.render.chunk.RenderSectionManager;
 import me.jellysquid.mods.sodium.client.render.chunk.data.BuiltSectionInfo;
 import me.jellysquid.mods.sodium.client.render.chunk.map.ChunkTrackerHolder;
-import me.jellysquid.mods.sodium.client.render.chunk.translucent_sorting.SortBehavior;
 import me.jellysquid.mods.sodium.client.render.viewport.Viewport;
-import me.cortex.voxy.client.core.util.FogParameters;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LightLayer;
-import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.chunk.ChunkStatus;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+// 1.20.1 backport: Rewritten for Sodium 0.5.x (was 0.9.x).
+// - Constructor: (ClientLevel, int, CommandList) instead of (ClientLevel, int, SortBehavior)
+// - renderOutOfGraph/readRenderListFromTree don't exist -> hook update() instead
+// - updateSectionInfo returns void; isInvisible() gone -> use HAS_BLOCK_GEOMETRY
 @Mixin(value = RenderSectionManager.class, remap = false)
 public class MixinRenderSectionManager {
     @Unique
@@ -35,32 +39,34 @@ public class MixinRenderSectionManager {
 
     @Shadow @Final private ClientLevel level;
 
+    @Unique private long cachedChunkPos = -1;
+    @Unique private int cachedChunkStatus;
+    @Unique private int bottomSectionY;
+
+    // 0.5.x: (ClientLevel, int, CommandList)
     @Inject(method = "<init>", at = @At("TAIL"))
-    private void voxy$resetChunkTracker(ClientLevel level, int renderDistance, SortBehavior sortBehavior, CallbackInfo ci) {
-        this.bottomSectionY = this.level.getMinY()>>4;
+    private void voxy$initBottomY(ClientLevel level, int renderDistance,
+                                   CommandList commandList, CallbackInfo ci) {
+        this.bottomSectionY = this.level.getMinY() >> 4;
     }
 
-    @Inject(method = "renderOutOfGraph", at = @At("HEAD"))
-    private void voxy$injectReset1(Viewport viewport, FogParameters fogParameters, CallbackInfo ci) {
+    // Replacement for renderOutOfGraph + readRenderListFromTree hooks (methods don't exist in 0.5.x):
+    // reset visible-section stream once per frame before rebuild.
+    @Inject(method = "update", at = @At("HEAD"))
+    private void voxy$resetVisibleStream(Camera camera, Viewport viewport,
+                                          int frame, boolean spectator,
+                                          CallbackInfo ci) {
         var vrs = IVoxyRenderSystemHolder.getNullable();
-        if (vrs != null && !IrisUtil.irisShadowActive() && vrs.visbleSectionStream != null) {
-            vrs.visbleSectionStream.reset();
-        }
-    }
-
-    @Inject(method = "readRenderListFromTree", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/lists/VisibleChunkCollector;<init>(Lme/jellysquid/mods/sodium/client/render/chunk/region/RenderRegionManager;I)V"))
-    private void voxy$injectReset2(Viewport viewport, FogParameters fogParameters, CallbackInfo ci) {
-        var vrs = IVoxyRenderSystemHolder.getNullable();
-        if (vrs != null && !IrisUtil.irisShadowActive() && vrs.visbleSectionStream != null) {
+        if (vrs != null && !IrisUtil.irisShadowActive()
+                && vrs.visbleSectionStream != null) {
             vrs.visbleSectionStream.reset();
         }
     }
 
     @Inject(method = "onChunkRemoved", at = @At("HEAD"))
     private void voxy$injectIngest(int x, int z, CallbackInfo ci) {
-        //TODO: Am not quite sure if this is right
         if (VoxyConfig.CONFIG.ingestEnabled && !BOBBY_INSTALLED) {
-            var cccm = (ICheekyClientChunkCache)this.level.getChunkSource();
+            var cccm = (ICheekyClientChunkCache) this.level.getChunkSource();
             if (cccm != null) {
                 var chunk = cccm.voxy$cheekyGetChunk(x, z);
                 if (chunk != null) {
@@ -69,7 +75,6 @@ public class MixinRenderSectionManager {
             }
         }
     }
-
 
     @Inject(method = "onChunkAdded", at = @At("HEAD"))
     private void voxy$ingestOnAdd(int x, int z, CallbackInfo ci) {
@@ -84,52 +89,42 @@ public class MixinRenderSectionManager {
         }
     }
 
-
-    @Unique private long cachedChunkPos = -1;
-    @Unique private int cachedChunkStatus;
-    @Unique private int bottomSectionY;
-
-
-    @Redirect(method = "updateSectionInfo", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/RenderSection;setInfo(Lme/jellysquid/mods/sodium/client/render/chunk/data/BuiltSectionInfo;)I"))
-    private int voxy$updateOnUpload(RenderSection instance, BuiltSectionInfo info) {
-        boolean isInvisible = instance.isInvisible();
-        int changes = instance.setInfo(info);
-        VoxyRenderSystem vrs = null;
-        if (isInvisible == instance.isInvisible() || changes == 0 || (vrs = IVoxyRenderSystemHolder.getNullable()) == null) {
-            return changes;
+    // 0.5.x: updateSectionInfo(RenderSection, BuiltSectionInfo) returns void.
+    // Inject at TAIL; section.setInfo() already called inside.
+    @Inject(method = "updateSectionInfo", at = @At("TAIL"))
+    private void voxy$updateOnUpload(RenderSection section, BuiltSectionInfo info,
+                                      CallbackInfo ci) {
+        // Replacement for isInvisible(): only ingest if section has block geometry.
+        if ((section.getFlags() & RenderSectionFlags.HAS_BLOCK_GEOMETRY) == 0) {
+            return;
         }
-        int x = instance.getChunkX(), y = instance.getChunkY(), z = instance.getChunkZ();
+        VoxyRenderSystem vrs = IVoxyRenderSystemHolder.getNullable();
+        if (vrs == null || !VoxyConfig.CONFIG.ingestEnabled) {
+            return;
+        }
+        int x = section.getChunkX(), y = section.getChunkY(), z = section.getChunkZ();
 
-        if (!isInvisible && VoxyConfig.CONFIG.ingestEnabled) {
-            var tracker = ((AccessorChunkTracker) ChunkTrackerHolder.get(this.level)).getChunkStatus();
-            //in theory the cache value could be wrong but is so soso unlikely and at worst means we either duplicate ingest a chunk
-            // which... could be bad ;-; or we dont ingest atall which is ok!
-            long key = ChunkPos.pack(x, z);
-            if (key != this.cachedChunkPos) {
-                this.cachedChunkPos = key;
-                this.cachedChunkStatus = tracker.getOrDefault(key, 0);
-            }
-            if (this.cachedChunkStatus == 3) {//If this chunk still has surrounding chunks
-                var cccm = this.level.getChunkSource();
-                //var chunk = ((ICheekyClientChunkCache)cccm).voxy$cheekyGetChunk(x, z);
-                //Dont thinks need to use cheekyGetChunk here as thats handled by the inject into head of onChunkRemoved
-                // but only ingest if the chunkstatus is full and exists
-                var chunk = cccm.getChunk(x, z, ChunkStatus.FULL, false);
-                if (chunk != null) {
-                    var section = chunk.getSection(y - this.bottomSectionY);
-                    var lp = this.level.getLightEngine();
-
-                    var csp = SectionPos.of(x, y, z);
-                    var blp = lp.getLayerListener(LightLayer.BLOCK).getDataLayerData(csp);
-                    var slp = lp.getLayerListener(LightLayer.SKY).getDataLayerData(csp);
-
-                    //Note: we dont do this check and just blindly ingest, it shouldbe ok :tm:
-                    //if (blp != null || slp != null)
-                    VoxelIngestService.rawIngest(vrs.getEngine(), section, x, y, z, blp == null ? null : blp.copy(), slp == null ? null : slp.copy());
-                }
+        // AccessorChunkTracker still valid: chunkStatus field exists in 0.5.x.
+        var tracker = ((AccessorChunkTracker) ChunkTrackerHolder.get(this.level))
+            .getChunkStatus();
+        long key = ChunkPos.asLong(x, z);
+        if (key != this.cachedChunkPos) {
+            this.cachedChunkPos = key;
+            this.cachedChunkStatus = tracker.getOrDefault(key, 0);
+        }
+        if (this.cachedChunkStatus == 3) { // chunk + neighbors ready
+            var cccm = this.level.getChunkSource();
+            var chunk = cccm.getChunk(x, z, ChunkStatus.FULL, false);
+            if (chunk != null) {
+                var sec = chunk.getSection(y - this.bottomSectionY);
+                var lp = this.level.getLightEngine();
+                var csp = SectionPos.of(x, y, z);
+                var blp = lp.getLayerListener(LightLayer.BLOCK).getDataLayerData(csp);
+                var slp = lp.getLayerListener(LightLayer.SKY).getDataLayerData(csp);
+                VoxelIngestService.rawIngest(vrs.getEngine(), sec, x, y, z,
+                    blp == null ? null : blp.copy(),
+                    slp == null ? null : slp.copy());
             }
         }
-
-        return changes;
     }
 }
