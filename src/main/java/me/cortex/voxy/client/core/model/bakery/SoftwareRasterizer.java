@@ -1,6 +1,6 @@
 package me.cortex.voxy.client.core.model.bakery;
 
-import me.jellysquid.mods.sodium.api.util.ColorMixer;
+// 1.20.1 backport: Sodium 0.5.x has no api.util.ColorMixer (added in 0.6+). Inlined simple blend.
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
@@ -251,8 +251,18 @@ public class SoftwareRasterizer {
         int blendAlpha = Math.min(0xFF,srcAlpha+((dstAlpha*(255-srcAlpha))>>8));
         //how much did we actually get
 
-        int blend = ColorMixer.mix(dst, scr, dstAlpha);//addRGB(ColorABGR.mulRGB(scr, 255-dstAlpha),ColorABGR.mulRGB(dst, dstAlpha));
+        int blend = mixABGR(dst, scr, dstAlpha);//addRGB(ColorABGR.mulRGB(scr, 255-dstAlpha),ColorABGR.mulRGB(dst, dstAlpha));
         return blend|(blendAlpha<<24);
+    }
+
+    // Inlined from Sodium 0.6+ ColorMixer (ABGR color blend)
+    private static int mixABGR(int dst, int src, int alpha) {
+        int sa = (alpha * ((src >>> 24) & 0xFF)) / 255;
+        int da = 255 - sa;
+        int r = ((((src) & 0xFF) * sa) + (((dst) & 0xFF) * da)) / 255;
+        int g = ((((src >>> 8) & 0xFF) * sa) + (((dst >>> 8) & 0xFF) * da)) / 255;
+        int b = ((((src >>> 16) & 0xFF) * sa) + (((dst >>> 16) & 0xFF) * da)) / 255;
+        return r | (g << 8) | (b << 16);
     }
 
     private static int addRGB(int a, int b) {
