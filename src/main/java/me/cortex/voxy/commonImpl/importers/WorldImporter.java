@@ -97,6 +97,11 @@ public class WorldImporter implements IDataImporter {
                 return null;
             }
 
+            @Override
+            public net.minecraft.world.level.chunk.PalettedContainerRO<Holder<Biome>> recreate() {
+                return this;
+            }
+
 
 
 
@@ -454,7 +459,7 @@ public class WorldImporter implements IDataImporter {
 
             for (var sectionE : chunk.getList("sections", 10)) {
                 var section = (CompoundTag) sectionE;
-                int y = section.getIntOr("Y", Integer.MIN_VALUE);
+                int y = section.contains("Y") ? section.getInt("Y") : Integer.MIN_VALUE;
                 this.importSectionNBT(x, y, z, section);
             }
         } catch (Exception e) {
@@ -471,8 +476,8 @@ public class WorldImporter implements IDataImporter {
             return;
         }
 
-        byte[] blockLightData = section.getByteArray("BlockLight").orElse(EMPTY);
-        byte[] skyLightData = section.getByteArray("SkyLight").orElse(EMPTY);
+        byte[] blockLightData = section.contains("BlockLight") ? section.getByteArray("BlockLight") : EMPTY;
+        byte[] skyLightData = section.contains("SkyLight") ? section.getByteArray("SkyLight") : EMPTY;
 
         DataLayer blockLight;
         if (blockLightData.length != 0) {
@@ -488,16 +493,16 @@ public class WorldImporter implements IDataImporter {
             skyLight = null;
         }
 
-        var blockStatesRes = blockStateCodec.parse(NbtOps.INSTANCE, section.getCompound("block_states").get());
+        var blockStatesRes = blockStateCodec.parse(NbtOps.INSTANCE, section.getCompound("block_states"));
         if (!blockStatesRes.hasResultOrPartial()) {
             //TODO: if its only partial, it means should try to upgrade the nbt format with datafixerupper probably
             return;
         }
         var blockStates = blockStatesRes.getPartialOrThrow();
         var biomes = this.defaultBiomeProvider;
-        var optBiomes = section.getCompound("biomes");
-        if (optBiomes.isPresent()) {
-            biomes = this.biomeCodec.parse(NbtOps.INSTANCE, optBiomes.get()).result().orElse(this.defaultBiomeProvider);
+        if (section.contains("biomes")) {
+            var optBiomes = section.getCompound("biomes");
+            biomes = this.biomeCodec.parse(NbtOps.INSTANCE, optBiomes).result().orElse(this.defaultBiomeProvider);
         }
         VoxelizedSection csec = WorldConversionFactory.convert(
                 SECTION_CACHE.get().setPosition(x, y, z),
