@@ -1,5 +1,6 @@
 package me.cortex.voxy.client.core.rendering.hierachical;
 
+import me.cortex.voxy.common.util.BitUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.*;
