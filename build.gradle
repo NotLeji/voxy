@@ -1,8 +1,23 @@
+buildscript {
+    repositories {
+        maven {
+            name = 'Fabric'
+            url = 'https://maven.fabricmc.net/'
+        }
+        gradlePluginPortal()
+    }
+    dependencies {
+        // Loom 1.7.x plugin marker is not published; resolve the jar directly
+        classpath "net.fabricmc:fabric-loom:${loom_version}"
+    }
+}
+
 plugins {
-    id 'net.fabricmc.fabric-loom' version "${loom_version}"
     id 'maven-publish'
     id "me.champeau.jmh" version "0.7.3"
 }
+
+apply plugin: 'fabric-loom'
 
 def INCLUDE_OTHER_ARCHS = "true".equalsIgnoreCase(project.findProperty("includeOtherArchs"))
 
