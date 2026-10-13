@@ -54,39 +54,37 @@ public final class ReuseVertexConsumer implements VertexConsumer {
         return this;
     }
 
-    @Override
     public ReuseVertexConsumer setColor(int red, int green, int blue, int alpha) {
         return this;
     }
 
-    @Override
     public VertexConsumer setColor(int i) {
         return this;
     }
 
-    @Override
     public ReuseVertexConsumer setUv(float u, float v) {
         MemoryUtil.memPutFloat(this.ptr + 16, u);
         MemoryUtil.memPutFloat(this.ptr + 20, v);
         return this;
     }
 
-    @Override
     public ReuseVertexConsumer setUv1(int u, int v) {
         return this;
     }
 
-    @Override
     public ReuseVertexConsumer setUv2(int u, int v) {
         return this;
     }
 
-    @Override
     public ReuseVertexConsumer setNormal(float x, float y, float z) {
         return this;
     }
 
     @Override
+    public void unsetDefaultColor() {
+        // 1.20.1: required by VertexConsumer interface
+    }
+
     public VertexConsumer setLineWidth(float f) {
         return null;
     }
