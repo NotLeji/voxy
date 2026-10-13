@@ -266,7 +266,7 @@ public class Mapper {
     }
 
     public int getIdForBiome(Holder<Biome> biome) {
-        String biomeId = biome.unwrapKey().get().identifier().toString();
+        String biomeId = biome.unwrapKey().get().location().toString();
         var entry = this.biome2biomeEntry.get(biomeId);
         if (entry == null) {
             entry = this.registerNewBiome(biomeId);
@@ -385,7 +385,7 @@ public class Mapper {
         public static StateEntry deserialize(int id, byte[] data, boolean[] forceResave) {
             try {
                 var compound = NbtIo.readCompressed(new ByteArrayInputStream(data), NbtAccounter.unlimitedHeap());
-                if (compound.getIntOr("id", -1) != id) {
+                if ((compound.contains("id", 3) ? compound.getInt("id") : -1) != id) {
                     throw new IllegalStateException("Encoded id != expected id");
                 }
                 var bsc = compound.getCompound("block_state").orElseThrow();
@@ -436,7 +436,7 @@ public class Mapper {
         public static BiomeEntry deserialize(int id, byte[] data) {
             try {
                 var compound = NbtIo.readCompressed(new ByteArrayInputStream(data), NbtAccounter.unlimitedHeap());
-                if (compound.getIntOr("id", -1) != id) {
+                if ((compound.contains("id", 3) ? compound.getInt("id") : -1) != id) {
                     throw new IllegalStateException("Encoded id != expected id");
                 }
                 String biome = compound.getStringOr("biome_id", null);
