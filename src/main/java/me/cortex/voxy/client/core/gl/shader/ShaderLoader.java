@@ -44,7 +44,7 @@ public class ShaderLoader {
 
         private static List<String> toLines(String src) {
             try {
-                return new BufferedReader(new StringReader(src)).readAllLines();
+                try (var br = new BufferedReader(new StringReader(src))) { return br.lines().toList(); } catch (Exception e) { throw new RuntimeException(e); }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
