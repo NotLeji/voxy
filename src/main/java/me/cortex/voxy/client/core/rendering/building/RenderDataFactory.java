@@ -1,5 +1,7 @@
 package me.cortex.voxy.client.core.rendering.building;
 
+import me.cortex.voxy.common.util.BitUtils;
+
 import me.cortex.voxy.client.core.model.IdNotYetComputedException;
 import me.cortex.voxy.client.core.model.ModelFactory;
 import me.cortex.voxy.client.core.model.ModelQueries;
@@ -335,7 +337,7 @@ public class RenderDataFactory {
             //Note this is not thread safe! (but eh, fk it)
             var raw = sec._unsafeGetRawDataArray();
             for (int i = 0; i < 32*32; i++) {
-                this.neighboringFaces[i+32*32*4] = raw[expandBits(i,0b11111_00000_11111)|(0x1F<<5)];//pull the +z faces from the section
+                this.neighboringFaces[i+32*32*4] = raw[BitUtils.expandBits(i,0b11111_00000_11111)|(0x1F<<5)];//pull the +z faces from the section
             }
             sec.release(WorldSection.RELEASE_HINT_POSSIBLE_REUSE);
         }
@@ -344,7 +346,7 @@ public class RenderDataFactory {
             //Note this is not thread safe! (but eh, fk it)
             var raw = sec._unsafeGetRawDataArray();
             for (int i = 0; i < 32*32; i++) {
-                this.neighboringFaces[i+32*32*5] = raw[expandBits(i,0b11111_00000_11111)];//pull the -z faces from the section
+                this.neighboringFaces[i+32*32*5] = raw[BitUtils.expandBits(i,0b11111_00000_11111)];//pull the -z faces from the section
             }
             sec.release(WorldSection.RELEASE_HINT_POSSIBLE_REUSE);
         }
@@ -929,9 +931,9 @@ public class RenderDataFactory {
                         this.xAxisMeshers[index].skip(31);
                     }
                     //Clear the sum
-                    sumA &= ~(expandBitsLong(Integer.toUnsignedLong(partialHasCount), X_I_MSK)*0x1F);
-                    sumB &= ~(expandBitsLong(Integer.toUnsignedLong(partialHasCount)>>11, X_I_MSK)*0x1F);
-                    sumC &= ~(expandBitsLong(Integer.toUnsignedLong(partialHasCount)>>22, X_I_MSK)*0x1F);
+                    sumA &= ~(BitUtils.expandBitsLong(Integer.toUnsignedLong(partialHasCount), X_I_MSK)*0x1F);
+                    sumB &= ~(BitUtils.expandBitsLong(Integer.toUnsignedLong(partialHasCount)>>11, X_I_MSK)*0x1F);
+                    sumC &= ~(BitUtils.expandBitsLong(Integer.toUnsignedLong(partialHasCount)>>22, X_I_MSK)*0x1F);
                 }
 
                 if (msk == 0) {
@@ -942,9 +944,9 @@ public class RenderDataFactory {
                 {//Dont need this as can just increment everything then -1 in mask
                     //Compute and increment skips for indexes
                     long imsk = Integer.toUnsignedLong(~msk);// we only want to increment where there isnt a face
-                    sumA += expandBitsLong(imsk, X_I_MSK);
-                    sumB += expandBitsLong(imsk>>11, X_I_MSK);
-                    sumC += expandBitsLong(imsk>>22, X_I_MSK);
+                    sumA += BitUtils.expandBitsLong(imsk, X_I_MSK);
+                    sumB += BitUtils.expandBitsLong(imsk>>11, X_I_MSK);
+                    sumC += BitUtils.expandBitsLong(imsk>>22, X_I_MSK);
                 }*/
 
                 int faceForwardMsk = msk&lMsk;
@@ -1146,9 +1148,9 @@ public class RenderDataFactory {
                         this.xAxisMeshers[index].skip(31);
                     }
                     //Clear the sum
-                    sumA &= ~(expandBitsLong(Integer.toUnsignedLong(partialHasCount), X_I_MSK)*0x1F);
-                    sumB &= ~(expandBitsLong(Integer.toUnsignedLong(partialHasCount)>>11, X_I_MSK)*0x1F);
-                    sumC &= ~(expandBitsLong(Integer.toUnsignedLong(partialHasCount)>>22, X_I_MSK)*0x1F);
+                    sumA &= ~(BitUtils.expandBitsLong(Integer.toUnsignedLong(partialHasCount), X_I_MSK)*0x1F);
+                    sumB &= ~(BitUtils.expandBitsLong(Integer.toUnsignedLong(partialHasCount)>>11, X_I_MSK)*0x1F);
+                    sumC &= ~(BitUtils.expandBitsLong(Integer.toUnsignedLong(partialHasCount)>>22, X_I_MSK)*0x1F);
                 }
 
                 if (msk == 0) {
@@ -1438,9 +1440,9 @@ public class RenderDataFactory {
                         this.secondaryXAxisMeshers[index].skip(31);
                     }
                     //Clear the sum
-                    sumA &= ~(expandBitsLong(Integer.toUnsignedLong(partialHasCount), X_I_MSK)*0x1F);
-                    sumB &= ~(expandBitsLong(Integer.toUnsignedLong(partialHasCount)>>11, X_I_MSK)*0x1F);
-                    sumC &= ~(expandBitsLong(Integer.toUnsignedLong(partialHasCount)>>22, X_I_MSK)*0x1F);
+                    sumA &= ~(BitUtils.expandBitsLong(Integer.toUnsignedLong(partialHasCount), X_I_MSK)*0x1F);
+                    sumB &= ~(BitUtils.expandBitsLong(Integer.toUnsignedLong(partialHasCount)>>11, X_I_MSK)*0x1F);
+                    sumC &= ~(BitUtils.expandBitsLong(Integer.toUnsignedLong(partialHasCount)>>22, X_I_MSK)*0x1F);
                 }
 
                 if (msk == 0) {
@@ -1805,33 +1807,5 @@ public class RenderDataFactory {
         this.quadBuffer.free();
     }
 
-    // 1.20.1 backport: Long.expand() was added in Java 19; implement manually for Java 17
-    private static long expandBitsLong(long value, long mask) {
-        long result = 0;
-        int srcBit = 0;
-        for (int i = 0; i < 64; i++) {
-            if ((mask & (1L << i)) != 0) {
-                if ((value & (1L << srcBit)) != 0) {
-                    result |= (1L << i);
-                }
-                srcBit++;
-            }
-        }
-        return result;
-    }
 
-    // 1.20.1 backport: Integer.expand() was added in Java 19; implement manually for Java 17
-    private static int expandBits(int value, int mask) {
-        int result = 0;
-        int srcBit = 0;
-        for (int i = 0; i < 32; i++) {
-            if ((mask & (1 << i)) != 0) {
-                if ((value & (1 << srcBit)) != 0) {
-                    result |= (1 << i);
-                }
-                srcBit++;
-            }
-        }
-        return result;
-    }
 }
