@@ -38,13 +38,13 @@ public final class ReuseVertexConsumer implements VertexConsumer {
     }
 
     @Override
-    public ReuseVertexConsumer addVertex(float x, float y, float z) {
+    public ReuseVertexConsumer vertex(double x, double y, double z) {
         this.ensureCanPut();
         this.ptr += VERTEX_FORMAT_SIZE; this.count++; //Goto next vertex
         this.meta(this.defaultMeta|this.globalOrMetadata);
-        MemoryUtil.memPutFloat(this.ptr, x);
-        MemoryUtil.memPutFloat(this.ptr + 4, y);
-        MemoryUtil.memPutFloat(this.ptr + 8, z);
+        MemoryUtil.memPutFloat(this.ptr, (float) x);
+        MemoryUtil.memPutFloat(this.ptr + 4, (float) y);
+        MemoryUtil.memPutFloat(this.ptr + 8, (float) z);
         return this;
     }
 
@@ -89,6 +89,10 @@ public final class ReuseVertexConsumer implements VertexConsumer {
         // 1.20.1: required by VertexConsumer
     }
 
+    public VertexConsumer overlayCoords(int u, int v) {
+        return this;
+    }
+
     public VertexConsumer uv2(int u, int v) {
         return this;
     }
@@ -128,7 +132,7 @@ public final class ReuseVertexConsumer implements VertexConsumer {
             float x = Float.intBitsToFloat(vertices[base + 0]);
             float y = Float.intBitsToFloat(vertices[base + 1]);
             float z = Float.intBitsToFloat(vertices[base + 2]);
-            this.addVertex(x, y, z);
+            this.vertex(x, y, z);
             float u = Float.intBitsToFloat(vertices[base + 4]);
             float v = Float.intBitsToFloat(vertices[base + 5]);
             this.setUv(u, v);
