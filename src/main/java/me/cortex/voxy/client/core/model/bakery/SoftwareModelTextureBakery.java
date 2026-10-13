@@ -5,8 +5,6 @@ import me.cortex.voxy.client.core.model.BakeLayer;
 import me.cortex.voxy.client.core.model.ModelFactory;
 import me.cortex.voxy.common.util.UnsafeUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.LiquidBlockRenderer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -85,12 +83,15 @@ public class SoftwareModelTextureBakery {
     }
 
     private static BakeLayer determineLayer(BlockState state) {
-        // 1.20.1: layer is per-block-state, not per-quad
-        if (ItemBlockRenderTypes.canRenderInLayer(state, RenderType.translucent())) {
+        // 1.20.1: Simplified heuristic (ItemBlockRenderTypes API differs)
+        // Fluids are handled separately; for blocks, check common translucent types
+        var block = state.getBlock();
+        // Water/lava are fluids, not here. Check for glass-like blocks
+        String path = block.getDescriptionId();
+        if (path.contains("glass") || path.contains("ice") || path.contains("slime")) {
             return BakeLayer.TRANSLUCENT;
         }
-        if (ItemBlockRenderTypes.canRenderInLayer(state, RenderType.cutout())
-                || ItemBlockRenderTypes.canRenderInLayer(state, RenderType.cutoutMipped())) {
+        if (state.is(net.minecraft.tags.BlockTags.LEAVES) || path.contains("leaves")) {
             return BakeLayer.CUTOUT;
         }
         return BakeLayer.SOLID;
@@ -168,10 +169,6 @@ public class SoftwareModelTextureBakery {
                 return 0;
             }
 
-            @Override
-            public int getMinY() {
-                return 0;
-            }
         }, BlockPos.ZERO, this.translucentVC, state, state.getFluidState());
         this.translucentVC.setDefaultMeta(0);//Reset default meta
         this.opaqueVC.setDefaultMeta(0);//Reset default meta
@@ -285,7 +282,7 @@ public class SoftwareModelTextureBakery {
         stack.mulPose(makeQuatFromAxisExact(new Vector3f(0,0,1), rotation));
         stack.mulPose(makeQuatFromAxisExact(new Vector3f(1,0,0), pitch));
         stack.mulPose(makeQuatFromAxisExact(new Vector3f(0,1,0), yaw));
-        stack.mulPose(new Matrix4f().scale(1-2*(flip&1), 1-(flip&2), 1-((flip>>1)&2)));
+        stack.mulPoseMatrix(new Matrix4f().scale(1-2*(flip&1), 1-(flip&2), 1-((flip>>1)&2)));
         stack.translate(-0.5f,-0.5f,-0.5f);
         var mat = new Matrix4f(stack.last().pose());
 
