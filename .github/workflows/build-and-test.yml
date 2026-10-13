@@ -1,0 +1,64 @@
+name: Build & Runtime Test (1.20.1)
+
+on:
+  push:
+    branches: [backport/1.20.1]
+  pull_request:
+    branches: [backport/1.20.1]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: backport/1.20.1
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build mod
+        run: ./gradlew build --no-daemon
+
+      - name: Upload jar
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: voxy-1201-jar
+          path: build/libs/voxy-*.jar
+          if-no-files-found: error
+
+  runtime-test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download built jar
+        uses: actions/download-artifact@v4
+        with:
+          name: voxy-1201-jar
+          path: staged
+
+      - name: Stage mods for runtime test
+        run: |
+          mkdir -p run/mods
+          cp staged/*.jar run/mods/
+          curl -sL -o run/mods/sodium.jar "https://cdn.modrinth.com/data/AANobbMI/versions/OihdIimA/sodium-fabric-0.5.13%2Bmc1.20.1.jar"
+          ls -la run/mods/
+
+      - name: MC runtime test
+        uses: headlesshq/mc-runtime-test@4.5.2
+        with:
+          mc: '1.20.1'
+          modloader: fabric
+          java: '17'
+          mc-runtime-test: fabric
+          mc-runtime-test-version: '4.5.2'
+          fabric-api: '0.92.12+1.20.1'
