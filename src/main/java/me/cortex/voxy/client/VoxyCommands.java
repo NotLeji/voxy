@@ -12,7 +12,7 @@ import me.cortex.voxy.commonImpl.VoxyCommon;
 import me.cortex.voxy.commonImpl.WorldIdentifier;
 import me.cortex.voxy.commonImpl.importers.DHImporter;
 import me.cortex.voxy.commonImpl.importers.WorldImporter;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
+import net.minecraft.commands.Commands;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -31,44 +31,44 @@ import java.util.concurrent.CompletableFuture;
 public class VoxyCommands {
 
     public static LiteralArgumentBuilder<FabricClientCommandSource> register() {
-        var imports = ClientCommands.literal("import")
-                .then(ClientCommands.literal("world")
-                        .then(ClientCommands.argument("world_name", StringArgumentType.string())
+        var imports = Commands.literal("import")
+                .then(Commands.literal("world")
+                        .then(Commands.argument("world_name", StringArgumentType.string())
                                 .suggests(VoxyCommands::importWorldSuggester)
                                 .executes(VoxyCommands::importWorld)))
-                .then(ClientCommands.literal("bobby")
-                        .then(ClientCommands.argument("world_name", StringArgumentType.string())
+                .then(Commands.literal("bobby")
+                        .then(Commands.argument("world_name", StringArgumentType.string())
                                 .suggests(VoxyCommands::importBobbySuggester)
                                 .executes(VoxyCommands::importBobby)))
-                .then(ClientCommands.literal("raw")
-                        .then(ClientCommands.argument("path", StringArgumentType.string())
+                .then(Commands.literal("raw")
+                        .then(Commands.argument("path", StringArgumentType.string())
                                 .executes(VoxyCommands::importRaw)))
-                .then(ClientCommands.literal("zip")
-                        .then(ClientCommands.argument("zipPath", StringArgumentType.string())
+                .then(Commands.literal("zip")
+                        .then(Commands.argument("zipPath", StringArgumentType.string())
                                 .executes(VoxyCommands::importZip)
-                                .then(ClientCommands.argument("innerPath", StringArgumentType.string())
+                                .then(Commands.argument("innerPath", StringArgumentType.string())
                                         .executes(VoxyCommands::importZip))))
-                .then(ClientCommands.literal("current")
+                .then(Commands.literal("current")
                         .executes(VoxyCommands::importCurrentWorldIn))
-                .then(ClientCommands.literal("cancel")
+                .then(Commands.literal("cancel")
                         .executes(VoxyCommands::cancelImport));
 
         if (DHImporter.HasRequiredLibraries) {
             imports = imports
-                    .then(ClientCommands.literal("distant_horizons")
-                    .then(ClientCommands.argument("sqlDbPath", StringArgumentType.string())
+                    .then(Commands.literal("distant_horizons")
+                    .then(Commands.argument("sqlDbPath", StringArgumentType.string())
                             .executes(VoxyCommands::importDistantHorizons)));
         }
 
-        var debug = ClientCommands.literal("debug")
-                .then(ClientCommands.literal("verifyTLNChildMask")
+        var debug = Commands.literal("debug")
+                .then(Commands.literal("verifyTLNChildMask")
                         .executes(ctx->verifyTLNs(ctx, false))
-                        .then(ClientCommands.argument("attemptRepair", BoolArgumentType.bool())
+                        .then(Commands.argument("attemptRepair", BoolArgumentType.bool())
                                 .executes(ctx->verifyTLNs(ctx, BoolArgumentType.getBool(ctx, "attemptRepair"))))
                 );
 
-        return ClientCommands.literal("voxy")//.requires((ctx)-> VoxyCommon.getInstance() != null)
-                .then(ClientCommands.literal("reload")
+        return Commands.literal("voxy")//.requires((ctx)-> VoxyCommon.getInstance() != null)
+                .then(Commands.literal("reload")
                         .executes(VoxyCommands::reloadInstance))
                 .then(imports)
                 .then(debug);
