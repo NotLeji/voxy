@@ -99,11 +99,11 @@ public class DHImporter implements IDataImporter {
     public DHImporter(File file, WorldEngine worldEngine, Level mcWorld, ServiceManager servicePool, BooleanSupplier rateLimiter) {
         this.engine = worldEngine;
         this.world = mcWorld;
-        this.biomeRegistry = mcWorld.registryAccess().lookupOrThrow(Registries.BIOME);
+        this.biomeRegistry = mcWorld.registryAccess().registryOrThrow(Registries.BIOME);
         this.defaultBiome = this.biomeRegistry.getOrThrow(Biomes.PLAINS);
-        this.blockRegistry = mcWorld.registryAccess().lookupOrThrow(Registries.BLOCK);
+        this.blockRegistry = mcWorld.registryAccess().registryOrThrow(Registries.BLOCK);
 
-        this.bottomOfWorld = mcWorld.getMinY();
+        this.bottomOfWorld = mcWorld.getMinBuildHeight();
         int worldHeight = mcWorld.getHeight();
         this.worldHeightSections = (worldHeight+15)/16;
 
@@ -227,7 +227,8 @@ public class DHImporter implements IDataImporter {
                 throw new IllegalStateException();
             {
                 var biomeRes = new ResourceLocation(encEntry.substring(0, idx));
-                var biome = this.biomeRegistry.get(biomeRes).orElse(this.defaultBiome);
+                var biome = this.biomeRegistry.get(biomeRes);
+                if (biome == null) biome = this.defaultBiome;
                 biomeId = this.engine.getMapper().getIdForBiome(biome);
             }
             {
