@@ -37,9 +37,7 @@ public class ModelStore {
         this.ref = GlobalCleaner.CLEANER.register(this, ()->RenderResourceReuse.giveBackModelStoreTextureAtlas(tex));
 
         //Limit the mips of the texture to match that of the terrain atlas
-        int mipLvl = ((TextureAtlas) Minecraft.getInstance().getTextureManager()
-                .getTexture(new ResourceLocation("minecraft", "textures/atlas/blocks.png")))
-                .maxMipLevel;
+        int mipLvl = 4; // 1.20.1: TextureAtlas.maxMipLevel not accessible; use default
 
         glSamplerParameteri(this.blockSampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
         glSamplerParameteri(this.blockSampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
