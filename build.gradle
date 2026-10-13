@@ -188,6 +188,8 @@ jar {
 
 jar {
     dependsOn(dummySodiumProviderGenerator)
+    // 1.20.1: Exclude Java 25 module-info from LWJGL (TinyRemapper can't parse class v69)
+    exclude('META-INF/versions/25/**')
 }
 
 loom {
