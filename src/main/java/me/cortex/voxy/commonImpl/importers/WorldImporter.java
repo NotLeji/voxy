@@ -63,17 +63,17 @@ public class WorldImporter implements IDataImporter {
         this.world = worldEngine;
         this.service = sm.createService(()->new Pair<>(()->this.jobQueue.poll().run(), ()->{}), 3, "World importer", runChecker);
 
-        var biomeRegistry = mcWorld.registryAccess().lookupOrThrow(Registries.BIOME);
-        var defaultBiome = biomeRegistry.getOrThrow(Biomes.PLAINS);
+        var biomeRegistry = mcWorld.registryAccess().registryOrThrow(Registries.BIOME);
+        var defaultBiomeHolder = biomeRegistry.getOrThrow(Biomes.PLAINS);
         this.defaultBiomeProvider = new PalettedContainerRO<>() {
             @Override
             public Holder<Biome> get(int x, int y, int z) {
-                return defaultBiome;
+                return defaultBiomeHolder;
             }
 
             @Override
             public void getAll(Consumer<Holder<Biome>> action) {
-                action.accept(defaultBiome);
+                action.accept(defaultBiomeHolder);
             }
 
             @Override
@@ -89,7 +89,7 @@ public class WorldImporter implements IDataImporter {
 
             @Override
             public boolean maybeHas(Predicate<Holder<Biome>> predicate) {
-                return predicate.test(defaultBiome);
+                return predicate.test(defaultBiomeHolder);
             }
 
 
@@ -98,9 +98,21 @@ public class WorldImporter implements IDataImporter {
 
         };
 
-        var factory = PalettedContainerFactory.create(mcWorld.registryAccess());
-        this.biomeCodec = factory.biomeContainerCodec();
-        this.blockStateCodec = factory.blockStatesContainerCodec();
+        // 1.20.1: Create codecs directly (PalettedContainerFactory removed)
+        var biomeRegistry = mcWorld.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.BIOME);
+        var blockRegistry = mcWorld.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.BLOCK);
+        this.biomeCodec = net.minecraft.world.level.chunk.PalettedContainer.codecRO(
+            biomeRegistry.asHolderIdMap(),
+            biomeRegistry.holderByNameCodec(),
+            net.minecraft.world.level.chunk.PalettedContainer.Strategy.SECTION_BIOMES,
+            defaultBiomeHolder
+        );
+        this.blockStateCodec = net.minecraft.world.level.chunk.PalettedContainer.codecRO(
+            blockRegistry.asHolderIdMap(),
+            net.minecraft.world.level.block.state.BlockState.CODEC,
+            net.minecraft.world.level.chunk.PalettedContainer.Strategy.SECTION_STATES,
+            net.minecraft.world.level.block.Blocks.AIR.defaultBlockState()
+        );
     }
 
 
