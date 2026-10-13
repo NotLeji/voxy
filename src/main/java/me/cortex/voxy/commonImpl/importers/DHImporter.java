@@ -101,7 +101,7 @@ public class DHImporter implements IDataImporter {
         this.engine = worldEngine;
         this.world = mcWorld;
         this.biomeRegistry = mcWorld.registryAccess().registryOrThrow(Registries.BIOME);
-        this.defaultBiome = this.biomeRegistry.getOrThrow(Biomes.PLAINS).value();
+        this.defaultBiome = this.biomeRegistry.getOrThrow(Biomes.PLAINS);
         this.blockRegistry = mcWorld.registryAccess().registryOrThrow(Registries.BLOCK);
 
         this.bottomOfWorld = mcWorld.getMinBuildHeight();
@@ -228,8 +228,8 @@ public class DHImporter implements IDataImporter {
                 throw new IllegalStateException();
             {
                 var biomeRes = new ResourceLocation(encEntry.substring(0, idx));
-                var biome = this.biomeRegistry.get(biomeRes);
-                if (biome == null) biome = this.defaultBiome;
+                var biomeHolder = this.biomeRegistry.get(biomeRes);
+                var biome = biomeHolder != null ? biomeHolder : this.defaultBiome;
                 biomeId = this.engine.getMapper().getIdForBiome(biome);
             }
             {
