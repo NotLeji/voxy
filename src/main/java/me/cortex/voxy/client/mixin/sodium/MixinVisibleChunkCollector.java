@@ -3,11 +3,11 @@ package me.cortex.voxy.client.mixin.sodium;
 import me.cortex.voxy.client.core.IVoxyRenderSystemHolder;
 import me.cortex.voxy.client.core.VoxyRenderSystem;
 import me.cortex.voxy.client.core.util.IrisUtil;
-import net.caffeinemc.mods.sodium.client.render.chunk.LocalSectionIndex;
-import net.caffeinemc.mods.sodium.client.render.chunk.RenderSectionFlags;
-import net.caffeinemc.mods.sodium.client.render.chunk.lists.VisibleChunkCollector;
-import net.caffeinemc.mods.sodium.client.render.chunk.region.RenderRegion;
-import net.caffeinemc.mods.sodium.client.render.chunk.region.RenderRegionManager;
+import me.jellysquid.mods.sodium.client.render.chunk.LocalSectionIndex;
+import me.jellysquid.mods.sodium.client.render.chunk.RenderSectionFlags;
+import me.jellysquid.mods.sodium.client.render.chunk.lists.VisibleChunkCollector;
+import me.jellysquid.mods.sodium.client.render.chunk.region.RenderRegion;
+import me.jellysquid.mods.sodium.client.render.chunk.region.RenderRegionManager;
 import net.minecraft.core.SectionPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -26,7 +26,7 @@ public class MixinVisibleChunkCollector {
     }*/
 
     //Use redirect for performance
-    @Redirect(method = "visit", at = @At(value = "INVOKE", target = "Lnet/caffeinemc/mods/sodium/client/render/chunk/region/RenderRegionManager;getForChunk(III)Lnet/caffeinemc/mods/sodium/client/render/chunk/region/RenderRegion;"), remap = false)
+    @Redirect(method = "visit", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/region/RenderRegionManager;getForChunk(III)Lme/jellysquid/mods/sodium/client/render/chunk/region/RenderRegion;"), remap = false)
     private RenderRegion voxy$injectVisibleSectionGather(RenderRegionManager instance, int x, int y, int z) {
         var region = instance.getForChunk(x,y,z);
         VoxyRenderSystem vrs;

@@ -6,13 +6,13 @@ import me.cortex.voxy.client.core.IVoxyRenderSystemHolder;
 import me.cortex.voxy.client.core.VoxyRenderSystem;
 import me.cortex.voxy.client.core.util.IrisUtil;
 import me.cortex.voxy.common.world.service.VoxelIngestService;
-import net.caffeinemc.mods.sodium.client.render.chunk.RenderSection;
-import net.caffeinemc.mods.sodium.client.render.chunk.RenderSectionManager;
-import net.caffeinemc.mods.sodium.client.render.chunk.data.BuiltSectionInfo;
-import net.caffeinemc.mods.sodium.client.render.chunk.map.ChunkTrackerHolder;
-import net.caffeinemc.mods.sodium.client.render.chunk.translucent_sorting.SortBehavior;
-import net.caffeinemc.mods.sodium.client.render.viewport.Viewport;
-import net.caffeinemc.mods.sodium.client.util.FogParameters;
+import me.jellysquid.mods.sodium.client.render.chunk.RenderSection;
+import me.jellysquid.mods.sodium.client.render.chunk.RenderSectionManager;
+import me.jellysquid.mods.sodium.client.render.chunk.data.BuiltSectionInfo;
+import me.jellysquid.mods.sodium.client.render.chunk.map.ChunkTrackerHolder;
+import me.jellysquid.mods.sodium.client.render.chunk.translucent_sorting.SortBehavior;
+import me.jellysquid.mods.sodium.client.render.viewport.Viewport;
+import me.jellysquid.mods.sodium.client.util.FogParameters;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.SectionPos;
@@ -48,7 +48,7 @@ public class MixinRenderSectionManager {
         }
     }
 
-    @Inject(method = "readRenderListFromTree", at = @At(value = "INVOKE", target = "Lnet/caffeinemc/mods/sodium/client/render/chunk/lists/VisibleChunkCollector;<init>(Lnet/caffeinemc/mods/sodium/client/render/chunk/region/RenderRegionManager;I)V"))
+    @Inject(method = "readRenderListFromTree", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/lists/VisibleChunkCollector;<init>(Lme/jellysquid/mods/sodium/client/render/chunk/region/RenderRegionManager;I)V"))
     private void voxy$injectReset2(Viewport viewport, FogParameters fogParameters, CallbackInfo ci) {
         var vrs = IVoxyRenderSystemHolder.getNullable();
         if (vrs != null && !IrisUtil.irisShadowActive() && vrs.visbleSectionStream != null) {
@@ -90,7 +90,7 @@ public class MixinRenderSectionManager {
     @Unique private int bottomSectionY;
 
 
-    @Redirect(method = "updateSectionInfo", at = @At(value = "INVOKE", target = "Lnet/caffeinemc/mods/sodium/client/render/chunk/RenderSection;setInfo(Lnet/caffeinemc/mods/sodium/client/render/chunk/data/BuiltSectionInfo;)I"))
+    @Redirect(method = "updateSectionInfo", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/RenderSection;setInfo(Lme/jellysquid/mods/sodium/client/render/chunk/data/BuiltSectionInfo;)I"))
     private int voxy$updateOnUpload(RenderSection instance, BuiltSectionInfo info) {
         boolean isInvisible = instance.isInvisible();
         int changes = instance.setInfo(info);

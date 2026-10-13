@@ -3,11 +3,11 @@ package me.cortex.voxy.client.mixin.sodium;
 import me.cortex.voxy.client.core.IVoxyRenderSystemHolder;
 import me.cortex.voxy.client.core.VoxyRenderSystem;
 import me.cortex.voxy.client.core.util.IrisUtil;
-import net.caffeinemc.mods.sodium.client.render.chunk.LocalSectionIndex;
-import net.caffeinemc.mods.sodium.client.render.chunk.RenderSection;
-import net.caffeinemc.mods.sodium.client.render.chunk.RenderSectionFlags;
-import net.caffeinemc.mods.sodium.client.render.chunk.lists.FallbackVisibleChunkCollector;
-import net.caffeinemc.mods.sodium.client.render.chunk.storage.SectionStorage;
+import me.jellysquid.mods.sodium.client.render.chunk.LocalSectionIndex;
+import me.jellysquid.mods.sodium.client.render.chunk.RenderSection;
+import me.jellysquid.mods.sodium.client.render.chunk.RenderSectionFlags;
+import me.jellysquid.mods.sodium.client.render.chunk.lists.FallbackVisibleChunkCollector;
+import me.jellysquid.mods.sodium.client.render.chunk.storage.SectionStorage;
 import net.minecraft.core.SectionPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -26,7 +26,7 @@ public class MixinFallbackVisibleChunkCollector {
     }*/
 
     //Use redirect for performance
-    @Redirect(method = "visit", at = @At(value = "INVOKE", target = "Lnet/caffeinemc/mods/sodium/client/render/chunk/storage/SectionStorage;getCurrent(III)Lnet/caffeinemc/mods/sodium/client/render/chunk/RenderSection;"), remap = false)
+    @Redirect(method = "visit", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/storage/SectionStorage;getCurrent(III)Lme/jellysquid/mods/sodium/client/render/chunk/RenderSection;"), remap = false)
     private RenderSection voxy$injectVisibleSectionGather(SectionStorage instance, int x, int y, int z) {
         var section = instance.getCurrent(x,y,z);
         VoxyRenderSystem vrs;
