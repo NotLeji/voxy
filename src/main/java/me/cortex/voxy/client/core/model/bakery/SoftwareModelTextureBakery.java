@@ -1,19 +1,20 @@
 package me.cortex.voxy.client.core.model.bakery;
 
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.vertex.PoseStack;
+import me.cortex.voxy.client.core.model.BakeLayer;
 import me.cortex.voxy.client.core.model.ModelFactory;
 import me.cortex.voxy.common.util.UnsafeUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.BlockAndTintGetter;
-import net.minecraft.client.renderer.block.FluidRenderer;
-import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
-import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.LiquidBlockRenderer;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.LightLayer;
@@ -31,7 +32,6 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.lwjgl.opengl.ARBDirectStateAccess.glGetTextureImage;
@@ -43,6 +43,7 @@ import static org.lwjgl.opengl.GL21.GL_PIXEL_PACK_BUFFER;
 import static org.lwjgl.opengl.GL30C.GL_FRAMEBUFFER;
 import static org.lwjgl.opengl.GL30C.glBindFramebuffer;
 
+// 1.20.1 backport: Uses 1.20.1 APIs (LiquidBlockRenderer, BakedModel.getQuads, AbstractTexture.getId).
 public class SoftwareModelTextureBakery {
     //Note: the first bit of metadata is if alpha discard is enabled
     private static final Matrix4f[] VIEWS = new Matrix4f[6];
@@ -51,21 +52,22 @@ public class SoftwareModelTextureBakery {
     private final ReuseVertexConsumer translucentVC = new ReuseVertexConsumer(1/*has discard*/);
     private final SoftwareRasterizer rasterizer = new SoftwareRasterizer(ModelFactory.MODEL_TEXTURE_SIZE);
 
-    private final FluidRenderer fr;
+    private final LiquidBlockRenderer fr;
     public SoftwareModelTextureBakery() {
-        this.fr = new FluidRenderer(Minecraft.getInstance().getModelManager().getFluidStateModelSet());
+        this.fr = new LiquidBlockRenderer();
     }
 
     public void setupTexture() {
-        var tex = Minecraft.getInstance().getTextureManager().getTexture(new ResourceLocation("minecraft", "textures/atlas/blocks.png")).getTexture();
-        if (tex.getFormat() != GpuFormat.RGBA8_UNORM) {
-            throw new IllegalStateException("Block atlas not rgba8: " + tex.getFormat());
-        }
+        AbstractTexture tex = Minecraft.getInstance().getTextureManager()
+            .getTexture(new ResourceLocation("minecraft", "textures/atlas/blocks.png"));
 
-        int targetMipLevel = 0;// Math.min(tex.getMipLevels(), 4)-1;//todo: we want to target the mip layer that has the 16x16 sized textures
+        int targetMipLevel = 0;
+        int glId = tex.getId();
 
-        int width = tex.getWidth(targetMipLevel);
-        int height = tex.getHeight(targetMipLevel);
+        // 1.20.1: Query dimensions via OpenGL (TextureAtlas doesn't expose them)
+        glBindTexture(GL_TEXTURE_2D, glId);
+        int width = glGetTexLevelParameteri(GL_TEXTURE_2D, targetMipLevel, GL_TEXTURE_WIDTH);
+        int height = glGetTexLevelParameteri(GL_TEXTURE_2D, targetMipLevel, GL_TEXTURE_HEIGHT);
 
         //Just do it ourselves as doing it with b3d has some issues, (doing it ourselves is also just much much much shorter)
         var texture = new int[width * height];
@@ -79,8 +81,20 @@ public class SoftwareModelTextureBakery {
         glPixelStorei(GL_PACK_SKIP_ROWS, 0);
         glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
         glPixelStorei(GL_PACK_ALIGNMENT, 4);
-        glGetTextureImage(((GlTexture) tex).glId(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture);
+        glGetTextureImage(glId, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture);
         this.rasterizer.setSamplerTexture(texture, width, height);
+    }
+
+    private static BakeLayer determineLayer(BlockState state) {
+        // 1.20.1: layer is per-block-state, not per-quad
+        if (ItemBlockRenderTypes.canRenderInLayer(state, RenderType.translucent())) {
+            return BakeLayer.TRANSLUCENT;
+        }
+        if (ItemBlockRenderTypes.canRenderInLayer(state, RenderType.cutout())
+                || ItemBlockRenderTypes.canRenderInLayer(state, RenderType.cutoutMipped())) {
+            return BakeLayer.CUTOUT;
+        }
+        return BakeLayer.SOLID;
     }
 
     private void bakeBlockModel(BlockState state) {
@@ -88,25 +102,23 @@ public class SoftwareModelTextureBakery {
             return;//Dont bake if invisible
         }
         var model = Minecraft.getInstance()
-                .getModelManager()
-                .getBlockStateModelSet()
-                .get(state);
+                .getBlockRenderer()
+                .getBlockModel(state);
 
-        List<BlockStateModelPart> out = new ArrayList<>();
-        model.collectParts(new SingleThreadedRandomSource(42L), out);
-        for (var part : out) {
-            for (Direction direction : new Direction[]{Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST, null}) {
-                var quads = part.getQuads(direction);
-                for (var quad : quads) {
-                    (quad.materialInfo().layer()==ChunkSectionLayer.TRANSLUCENT?this.translucentVC:this.opaqueVC)
-                            .quad(quad, state.is(BlockTags.LEAVES));
-                }
+        BakeLayer layer = determineLayer(state);
+        var random = new SingleThreadedRandomSource(42L);
+        for (Direction direction : new Direction[]{Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST, null}) {
+            List<BakedQuad> quads = model.getQuads(state, direction, random);
+            for (BakedQuad quad : quads) {
+                ((layer == BakeLayer.TRANSLUCENT) ? this.translucentVC : this.opaqueVC)
+                        .quad(quad, state.is(BlockTags.LEAVES), layer);
             }
         }
     }
 
 
     private void bakeFluidState(BlockState state, int face) {
+        // 1.20.1: Fluids are always translucent; use translucentVC directly
         this.fr.tesselate(new BlockAndTintGetter() {
             @Override
             public LevelLightEngine getLightEngine() {
@@ -144,16 +156,6 @@ public class SoftwareModelTextureBakery {
                 if (shouldReturnAirForFluid(pos, face)) {
                     return Blocks.AIR.defaultBlockState();
                 }
-
-                //Fixme:
-                // This makes it so that the top face of water is always air, if this is commented out
-                //  the up block will be a liquid state which makes the sides full
-                // if this is uncommented, that issue is fixed but e.g. stacking water layers ontop of eachother
-                //  doesnt fill the side of the block
-
-                //if (pos.getY() == 1) {
-                //    return Blocks.AIR.getDefaultState();
-                //}
                 return state;
             }
 
@@ -175,15 +177,7 @@ public class SoftwareModelTextureBakery {
             public int getMinY() {
                 return 0;
             }
-        }, BlockPos.ZERO, layer->{
-            if (layer == ChunkSectionLayer.TRANSLUCENT) return this.translucentVC;
-            if (layer == ChunkSectionLayer.CUTOUT) {
-                this.opaqueVC.setDefaultMeta(this.opaqueVC.getDefaultMeta()|1);//set discard
-            } else {
-                this.opaqueVC.setDefaultMeta(this.opaqueVC.getDefaultMeta()&~1);//remove discard
-            }
-            return this.opaqueVC;
-        }, state, state.getFluidState());
+        }, BlockPos.ZERO, this.translucentVC, state, state.getFluidState());
         this.translucentVC.setDefaultMeta(0);//Reset default meta
         this.opaqueVC.setDefaultMeta(0);//Reset default meta
     }
