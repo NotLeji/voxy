@@ -68,11 +68,13 @@ public class VoxyClient implements ClientModInitializer {
         // 1.20.1 backport: init directly (was via MixinRenderSystem targeting 1.21.2+ GpuDevice API)
         initVoxyClient();
 
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-            if (VoxyCommon.isAvailable()) {
-                dispatcher.register(VoxyCommands.register());
-            }
-        });
+        // 1.20.1: ClientCommandRegistrationCallback disabled due to intermediary mapping issues
+        // TODO: Re-enable once Fabric API mappings are fixed
+        // ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+        //     if (VoxyCommon.isAvailable()) {
+        //         dispatcher.register(VoxyCommands.register());
+        //     }
+        // });
 
         FabricLoader.getInstance()
                 .getEntrypoints("frex_flawless_frames", Consumer.class)
