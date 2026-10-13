@@ -13,8 +13,8 @@ public class OccupancySet {
     private long topLvl;//4x4x4
     private final long[] bottomLvl = new long[(4*4*4)*8];
     public void set(final int pos) {
-        final long topBit = 1L<<Integer.compress(pos, 0b11000_11000_11000);
-        final int  botIdx =     Integer.compress(pos, 0b00111_00111_00111);
+        final long topBit = 1L<<compressBits(pos, 0b11000_11000_11000);
+        final int  botIdx =     compressBits(pos, 0b00111_00111_00111);
 
         int baseBotIdx = Long.bitCount(this.topLvl&(topBit-1))*8;
         if ((this.topLvl & topBit) == 0) {
@@ -38,8 +38,8 @@ public class OccupancySet {
     }
 
     private boolean get(int pos) {
-        final long topBit = 1L<<Integer.compress(pos, 0b11000_11000_11000);
-        final int  botIdx =     Integer.compress(pos, 0b00111_00111_00111);
+        final long topBit = 1L<<compressBits(pos, 0b11000_11000_11000);
+        final int  botIdx =     compressBits(pos, 0b00111_00111_00111);
         if ((this.topLvl & topBit) == 0) {
             return false;
         }
@@ -101,5 +101,20 @@ public class OccupancySet {
                 }
             }
         }
+    }
+
+    // 1.20.1 backport: Integer.compress() was added in Java 19; implement manually for Java 17
+    private static int compressBits(int value, int mask) {
+        int result = 0;
+        int dstBit = 0;
+        for (int i = 0; i < 32; i++) {
+            if ((mask & (1 << i)) != 0) {
+                if ((value & (1 << i)) != 0) {
+                    result |= (1 << dstBit);
+                }
+                dstBit++;
+            }
+        }
+        return result;
     }
 }
