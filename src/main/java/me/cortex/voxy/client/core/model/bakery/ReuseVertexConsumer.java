@@ -81,6 +81,10 @@ public final class ReuseVertexConsumer implements VertexConsumer {
     }
 
     @Override
+    public void defaultColor(int r, int g, int b, int a) {
+        // 1.20.1: required by VertexConsumer
+    }
+
     public void unsetDefaultColor() {
         // 1.20.1: required by VertexConsumer interface
     }
