@@ -43,11 +43,7 @@ public class ShaderLoader {
         }
 
         private static List<String> toLines(String src) {
-            try {
-                try (var br = new BufferedReader(new StringReader(src))) { return br.lines().toList(); } catch (Exception e) { throw new RuntimeException(e); }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            try (var br = new BufferedReader(new StringReader(src))) { return br.lines().toList(); } catch (Exception e) { throw new RuntimeException(e); }
         }
         private static String loadShaderAsset(ResourceLocation id) {
             String path = String.format("/assets/%s/shaders/%s", id.getNamespace(), id.getPath());
