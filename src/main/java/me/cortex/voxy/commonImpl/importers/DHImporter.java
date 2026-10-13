@@ -101,7 +101,7 @@ public class DHImporter implements IDataImporter {
         this.engine = worldEngine;
         this.world = mcWorld;
         this.biomeRegistry = mcWorld.registryAccess().registryOrThrow(Registries.BIOME);
-        this.defaultBiome = this.biomeRegistry.getOrThrow(Biomes.PLAINS);
+        this.defaultBiome = this.biomeRegistry.getHolderOrThrow(Biomes.PLAINS);
         this.blockRegistry = mcWorld.registryAccess().registryOrThrow(Registries.BLOCK);
 
         this.bottomOfWorld = mcWorld.getMinBuildHeight();
@@ -228,8 +228,9 @@ public class DHImporter implements IDataImporter {
                 throw new IllegalStateException();
             {
                 var biomeRes = new ResourceLocation(encEntry.substring(0, idx));
-                var biomeHolder = this.biomeRegistry.get(biomeRes);
-                var biome = biomeHolder != null ? biomeHolder : this.defaultBiome;
+                var biomeKey = net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME, biomeRes);
+                var biomeHolder = this.biomeRegistry.getHolder(biomeKey);
+                var biome = biomeHolder.orElse(this.defaultBiome);
                 biomeId = this.engine.getMapper().getIdForBiome(biome);
             }
             {
