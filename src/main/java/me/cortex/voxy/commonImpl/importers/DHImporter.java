@@ -101,7 +101,7 @@ public class DHImporter implements IDataImporter {
         this.engine = worldEngine;
         this.world = mcWorld;
         this.biomeRegistry = mcWorld.registryAccess().registryOrThrow(Registries.BIOME);
-        this.defaultBiome = this.biomeRegistry.getOrThrow(Biomes.PLAINS);
+        this.defaultBiome = this.biomeRegistry.getOrThrow(Biomes.PLAINS).value();
         this.blockRegistry = mcWorld.registryAccess().registryOrThrow(Registries.BLOCK);
 
         this.bottomOfWorld = mcWorld.getMinBuildHeight();
@@ -228,8 +228,8 @@ public class DHImporter implements IDataImporter {
                 throw new IllegalStateException();
             {
                 var biomeRes = new ResourceLocation(encEntry.substring(0, idx));
-                var biome = this.biomeRegistry.get(biomeRes);
-                if (biome == null) biome = this.defaultBiome;
+                var biomeHolder = this.biomeRegistry.getHolder(biomeRes);
+                var biome = biomeHolder.isPresent() ? biomeHolder.get().value() : this.defaultBiome;
                 biomeId = this.engine.getMapper().getIdForBiome(biome);
             }
             {
@@ -243,10 +243,9 @@ public class DHImporter implements IDataImporter {
                         bStateStr = encEntry.substring(sIdx + STATE_STRING_SEPARATOR.length());
                     }
                     var bId = new ResourceLocation(encEntry.substring(b, sIdx != -1 ? sIdx : encEntry.length()));
-                    var maybeBlock = this.blockRegistry.get(bId);
-                    Block block = Blocks.AIR;
-                    if (maybeBlock.isPresent()) {
-                        block = maybeBlock.get().value();
+                    Block block = this.blockRegistry.get(bId);
+                    if (block == null) {
+                        block = Blocks.AIR;
                     }
                     var state = block.defaultBlockState();
                     if (bStateStr != null && block != Blocks.AIR) {
