@@ -827,7 +827,7 @@ public class ModelFactory {
 
             @Override
             public LevelLightEngine getLightEngine() {
-                return LevelLightEngine.EMPTY;
+                return null;
             }
 
 
@@ -886,7 +886,7 @@ public class ModelFactory {
 
             @Override
             public LevelLightEngine getLightEngine() {
-                return LevelLightEngine.EMPTY;
+                return null;
             }
 
 
