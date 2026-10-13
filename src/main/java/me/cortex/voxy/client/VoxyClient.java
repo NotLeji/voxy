@@ -65,6 +65,8 @@ public class VoxyClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         DebugEntries.init();
+        // 1.20.1 backport: init directly (was via MixinRenderSystem targeting 1.21.2+ GpuDevice API)
+        initVoxyClient();
 
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
             if (VoxyCommon.isAvailable()) {
