@@ -47,7 +47,7 @@ public class MixinRenderSectionManager {
     @Inject(method = "<init>", at = @At("TAIL"))
     private void voxy$initBottomY(ClientLevel level, int renderDistance,
                                    CommandList commandList, CallbackInfo ci) {
-        this.bottomSectionY = this.world.getMinY() >> 4;
+        this.bottomSectionY = this.world.getMinBuildHeight() >> 4;
     }
 
     // Replacement for renderOutOfGraph + readRenderListFromTree hooks (methods don't exist in 0.5.x):
