@@ -70,7 +70,7 @@ public class ModelFactory {
         }
     }
 
-    private final Biome DEFAULT_BIOME = Minecraft.getInstance().level.registryAccess().lookupOrThrow(Registries.BIOME).getValue(Biomes.PLAINS);
+    private final Biome DEFAULT_BIOME = Minecraft.getInstance().level.registryAccess().registryOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS).value();
 
     public final SoftwareModelTextureBakery bakery2;
     private final long bakeScratchBuffer = MemoryUtil.nmemAlloc(MODEL_TEXTURE_SIZE*MODEL_TEXTURE_SIZE*8*6);
@@ -306,9 +306,9 @@ public class ModelFactory {
     public boolean processAllThings() {
         var biomeEntry = this.biomeQueue.poll();
         while (biomeEntry != null) {
-            var biomeRegistry = Minecraft.getInstance().level.registryAccess().lookupOrThrow(Registries.BIOME);
+            var biomeRegistry = Minecraft.getInstance().level.registryAccess().registryOrThrow(Registries.BIOME);
             var mcbiomeEntry = biomeRegistry.get(new ResourceLocation(biomeEntry.biome));
-            if (!mcbiomeEntry.isPresent()) {
+            if (mcbiomeEntry == null) {
                 Logger.warn("Could not find biome: " + biomeEntry.biome + " using default");
             }
             var res = this.addBiome0(biomeEntry.id, mcbiomeEntry.isPresent()?mcbiomeEntry.orElseThrow().value():DEFAULT_BIOME);
@@ -702,11 +702,12 @@ public class ModelFactory {
     }
 
     private static int getBlockLightEmission(BlockState state) {
-        boolean isEmissive = state.emissiveRendering();
+        // 1.20.1: emissiveRendering needs (BlockGetter, BlockPos); use light emission directly
+        boolean isEmissive = state.getLightEmission() >= 15;
         if (isEmissive) {
             return 15;//full bright
         }
-        return Math.clamp(state.getLightEmission(),0,15);
+        return Math.max(0, Math.min(15, state.getLightEmission()));
     }
 
     private static final class BiomeUploadResult implements ResultUploader {
@@ -768,7 +769,7 @@ public class ModelFactory {
         long modelUpPtr = result.modelBiomeIndexPairs.address;
         for (var entry : this.modelsRequiringBiomeColours) {
             int colourProvider = getTintIndex(entry.state);
-            if (colourProvider == null) {
+            if (colourProvider == -1) {
                 throw new IllegalStateException();
             }
             //Populate the list of biomes for the model state
