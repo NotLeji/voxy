@@ -78,22 +78,7 @@ public class ColumnStreamedBoundStore implements IBoundStore {
         }
 
         int count = 0;
-        // 1.20.1: ChunkTrackerHolder disabled due to intermediary mapping issues
-        // TODO: Re-enable once Sodium mappings are fixed
-        var tracker = (Object) null;
-        if (false) {
-            var iter = ((me.jellysquid.mods.sodium.client.world.ChunkTracker) tracker).getReadyChunks().longIterator();
-            while (iter.hasNext()) {
-                long column = iter.nextLong();
-                //Emit column
-                for (int cy = mincy + 1; cy < maxcy; cy++) {
-                    if (count++ < capacity && writePtr != 0) {
-                        putPos(writePtr, SectionPos.asLong(ChunkPos.getX(column), cy, ChunkPos.getZ(column)));
-                        writePtr += 8;
-                    }
-                }
-            }
-        }
+        // 1.20.1: Sodium ChunkTracker integration disabled (API changed in 0.5.x)
 
         if (count>capacity) {
             return -count;
