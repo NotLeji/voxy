@@ -65,48 +65,12 @@ public class WorldImporter implements IDataImporter {
 
         var biomeRegistry = mcWorld.registryAccess().registryOrThrow(Registries.BIOME);
         var defaultBiomeHolder = biomeRegistry.getHolderOrThrow(Biomes.PLAINS);
-        this.defaultBiomeProvider = new PalettedContainerRO<Holder<Biome>>() {
-            @Override
-            public Holder<Biome> get(int x, int y, int z) {
-                return defaultBiomeHolder;
-            }
-
-            @Override
-            public void getAll(Consumer<Holder<Biome>> action) {
-                action.accept(defaultBiomeHolder);
-            }
-
-            @Override
-            public void write(FriendlyByteBuf buf) {
-
-            }
-
-            @Override
-            public int getSerializedSize() {
-                return 0;
-            }
-
-
-            @Override
-            public boolean maybeHas(Predicate<Holder<Biome>> predicate) {
-                return predicate.test(defaultBiomeHolder);
-            }
-
-            @Override
-            public net.minecraft.world.level.chunk.PalettedContainerRO.PackedData<Holder<Biome>> pack(net.minecraft.core.IdMap<Holder<Biome>> idMap, net.minecraft.world.level.chunk.PalettedContainer.Strategy strategy) {
-                return null;
-            }
-
-            @Override
-            public net.minecraft.world.level.chunk.PalettedContainerRO recreate() {
-                return this;
-            }
-
-
-
-
-
-        };
+        // 1.20.1: Use a real PalettedContainer instead of anonymous class (avoids interface issues)
+        this.defaultBiomeProvider = new net.minecraft.world.level.chunk.PalettedContainer<>(
+            biomeRegistry.asHolderIdMap(),
+            defaultBiomeHolder,
+            net.minecraft.world.level.chunk.PalettedContainer.Strategy.SECTION_BIOMES
+        );
 
         // 1.20.1: Create codecs directly (PalettedContainerFactory removed)
         this.biomeCodec = net.minecraft.world.level.chunk.PalettedContainer.codecRO(
