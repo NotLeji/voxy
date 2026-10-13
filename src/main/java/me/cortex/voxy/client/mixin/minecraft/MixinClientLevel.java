@@ -33,7 +33,7 @@ public abstract class MixinClientLevel {
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void voxy$getBottom(CallbackInfo cir) {
-        this.bottomSectionY = ((Level)(Object)this).getMinY()>>4;
+        this.bottomSectionY = ((Level)(Object)this).getMinBuildHeight()>>4;
     }
 
     @Inject(method = "setBlocksDirty", at = @At("TAIL"))
