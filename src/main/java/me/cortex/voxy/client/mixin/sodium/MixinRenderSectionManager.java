@@ -12,7 +12,7 @@ import me.jellysquid.mods.sodium.client.render.chunk.data.BuiltSectionInfo;
 import me.jellysquid.mods.sodium.client.render.chunk.map.ChunkTrackerHolder;
 import me.jellysquid.mods.sodium.client.render.chunk.translucent_sorting.SortBehavior;
 import me.jellysquid.mods.sodium.client.render.viewport.Viewport;
-import me.jellysquid.mods.sodium.client.util.FogParameters;
+import me.cortex.voxy.client.core.util.FogParameters;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.SectionPos;
