@@ -185,8 +185,8 @@ public class SoftwareModelTextureBakery {
     }
 
     private static boolean shouldReturnAirForFluid(BlockPos pos, int face) {
-        var fv = Direction.from3DDataValue(face).getUnitVec3i();
-        int dot = fv.getX()*pos.getX() + fv.getY()*pos.getY() + fv.getZ()*pos.getZ();
+        var dir = Direction.from3DDataValue(face);
+        int dot = dir.getStepX()*pos.getX() + dir.getStepY()*pos.getY() + dir.getStepZ()*pos.getZ();
         return dot >= 1;
     }
 
