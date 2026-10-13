@@ -122,7 +122,7 @@ public class SoftwareModelTextureBakery {
         this.fr.tesselate(new BlockAndTintGetter() {
             @Override
             public LevelLightEngine getLightEngine() {
-                return LevelLightEngine.EMPTY;
+                return null;
             }
 
             @Override
