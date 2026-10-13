@@ -20,7 +20,7 @@ import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.ColorResolver;
@@ -308,7 +308,7 @@ public class ModelFactory {
         var biomeEntry = this.biomeQueue.poll();
         while (biomeEntry != null) {
             var biomeRegistry = Minecraft.getInstance().level.registryAccess().lookupOrThrow(Registries.BIOME);
-            var mcbiomeEntry = biomeRegistry.get(Identifier.parse(biomeEntry.biome));
+            var mcbiomeEntry = biomeRegistry.get(new ResourceLocation(biomeEntry.biome));
             if (!mcbiomeEntry.isPresent()) {
                 Logger.warn("Could not find biome: " + biomeEntry.biome + " using default");
             }
