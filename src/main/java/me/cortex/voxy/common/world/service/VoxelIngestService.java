@@ -104,7 +104,7 @@ public class VoxelIngestService {
         var lightingProvider = chunk.getLevel().getLightEngine();
         boolean gotLighting = false;
 
-        int i = chunk.getMinSectionY() - 1;
+        int i = chunk.getLevel().getMinY() >> 4 - 1;
         boolean allEmpty = true;
         for (var section : chunk.getSections()) {
             i++;
@@ -119,7 +119,7 @@ public class VoxelIngestService {
 
         if (allEmpty&&!gotLighting) {
             //Special case all empty chunk columns, we need to clear it out
-            i = chunk.getMinSectionY() - 1;
+            i = chunk.getLevel().getMinY() >> 4 - 1;
             for (var section : chunk.getSections()) {
                 i++;
                 if (section == null || !shouldIngestSection(section, chunk.getPos().x(), i, chunk.getPos().z())) continue;
@@ -143,7 +143,7 @@ public class VoxelIngestService {
         var slp = lightingProvider.getLayerListener(LightLayer.SKY);
 
 
-        i = chunk.getMinSectionY() - 1;
+        i = chunk.getLevel().getMinY() >> 4 - 1;
         for (var section : chunk.getSections()) {
             i++;
             if (section == null || !shouldIngestSection(section, chunk.getPos().x(), i, chunk.getPos().z())) continue;
