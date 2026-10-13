@@ -56,8 +56,7 @@ public class IrisVoxyRenderPipelineData {
     public final String TAA;
     public final boolean useViewportDims;
     public final boolean deferTranslucency;
-    public final boolean skipShaderDepthHackFix;
-    public final boolean useDynamicFarPlane;
+    public boolean skipShaderDepthHackFix;
 
     private IrisVoxyRenderPipelineData(IrisShaderPatch patch, int[] opaqueDrawTargets, int[] translucentDrawTargets, StructLayout uniformSet, Runnable blendingSetup, ImageSet imageSet, SSBOSet ssboSet) {
         this.opaqueDrawTargets = opaqueDrawTargets;
@@ -74,7 +73,6 @@ public class IrisVoxyRenderPipelineData {
         this.useViewportDims = patch.useViewportDims();
         this.deferTranslucency = patch.deferedTranslucentRendering();
         this.skipShaderDepthHackFix = patch.skipShaderDepthHackFix();
-        this.useDynamicFarPlane = patch.useDynamicFarPlane();
     }
 
     public SSBOSet getSsboSet() {

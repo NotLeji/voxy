@@ -25,7 +25,7 @@ import static org.lwjgl.opengl.GL33.*;
 
 public class IrisShaderPatch {
     public static final int VERSION = ((IntSupplier)()->1).getAsInt();
-    public static final int SHADER_DEFINE_VERSION = 3;
+    public static final int SHADER_DEFINE_VERSION = 2;
 
 
     private static final class SSBODeserializer implements JsonDeserializer<Int2ObjectOpenHashMap<String>> {
@@ -178,7 +178,6 @@ public class IrisShaderPatch {
         public float[] renderScale;
         public boolean useViewportDims;
         public boolean skipShaderDepthHackFix;
-        public boolean useDynamicFarPlane;
         //public boolean deferTranslucentRendering;
         public String checkValid() {
             if (this.blending != null) {
@@ -275,10 +274,6 @@ public class IrisShaderPatch {
 
     public boolean deferedTranslucentRendering() {
         return false;//this.patchData.deferTranslucentRendering;
-    }
-
-    public boolean useDynamicFarPlane() {
-        return this.patchData.useDynamicFarPlane;
     }
 
     public Runnable createBlendSetup() {
