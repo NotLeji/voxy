@@ -365,7 +365,7 @@ public class Mapper {
             if (state.getBlock() instanceof LeavesBlock) {
                 this.opacity = 15;
             } else {
-                this.opacity = state.getLightBlock();
+                this.opacity = state.isSolid() ? 15 : 0; // 1.20.1: getLightBlock needs context; approximate
             }
         }
 
@@ -388,7 +388,7 @@ public class Mapper {
                 if ((compound.contains("id", 3) ? compound.getInt("id") : -1) != id) {
                     throw new IllegalStateException("Encoded id != expected id");
                 }
-                var bsc = compound.getCompound("block_state").orElseThrow();
+                var bsc = compound.getCompound("block_state");
                 var state = BlockState.CODEC.parse(NbtOps.INSTANCE, bsc);
                 if (state.isError()) {
                     Logger.info("Could not decode blockstate, attempting fixes, error: "+ state.error().get().message());
@@ -439,7 +439,7 @@ public class Mapper {
                 if ((compound.contains("id", 3) ? compound.getInt("id") : -1) != id) {
                     throw new IllegalStateException("Encoded id != expected id");
                 }
-                String biome = compound.getStringOr("biome_id", null);
+                String biome = compound.contains("biome_id", 8) ? compound.getString("biome_id") : null;
                 return new BiomeEntry(id, biome);
             } catch (IOException e) {
                 throw new RuntimeException(e);
