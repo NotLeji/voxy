@@ -89,6 +89,10 @@ public final class ReuseVertexConsumer implements VertexConsumer {
         // 1.20.1: required by VertexConsumer
     }
 
+    public VertexConsumer uv2(int u, int v) {
+        return this;
+    }
+
     public VertexConsumer normal(float x, float y, float z) {
         // 1.20.1: required by VertexConsumer
         return this;
