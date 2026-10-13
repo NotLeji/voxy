@@ -1,9 +1,10 @@
 package me.cortex.voxy.client.core.model;
 
 import me.jellysquid.mods.sodium.client.util.color.ColorSRGB;
-import net.minecraft.util.ARGB;
 
 import java.util.Arrays;
+
+// 1.20.1 backport: net.minecraft.util.ARGB doesn't exist (1.21.2+). Inlined.
 
 //Texturing utils to manipulate data from the model bakery
 public class TextureUtils {
@@ -278,8 +279,17 @@ public class TextureUtils {
                 r / 4,
                 g / 4,
                 b / 4,
-                darkend ? ((int) a) / 4 : ARGB.linearToSrgbChannel(a / 4)
+                darkend ? ((int) a) / 4 : linearToSrgbChannel(a / 4)
         );
+    }
+
+    // Inlined from 1.21.2+ ARGB.linearToSrgbChannel
+    private static int linearToSrgbChannel(float linear) {
+        if (linear <= 0.0031308f) {
+            return (int) (linear * 12.92f * 255.0f);
+        } else {
+            return (int) ((1.055f * Math.pow(linear, 1.0 / 2.4) - 0.055) * 255.0f);
+        }
     }
 
 }
