@@ -228,8 +228,8 @@ public class DHImporter implements IDataImporter {
                 throw new IllegalStateException();
             {
                 var biomeRes = new ResourceLocation(encEntry.substring(0, idx));
-                var biomeHolder = this.biomeRegistry.getHolder(biomeRes);
-                var biome = biomeHolder.isPresent() ? biomeHolder.get().value() : this.defaultBiome;
+                var biome = this.biomeRegistry.get(biomeRes);
+                if (biome == null) biome = this.defaultBiome;
                 biomeId = this.engine.getMapper().getIdForBiome(biome);
             }
             {
