@@ -33,7 +33,7 @@ import me.cortex.voxy.common.thread.ServiceManager;
 import me.cortex.voxy.common.util.GlobalCleaner;
 import me.cortex.voxy.common.world.WorldEngine;
 import me.cortex.voxy.commonImpl.VoxyCommon;
-import net.caffeinemc.mods.sodium.client.util.FogParameters;
+import me.jellysquid.mods.sodium.client.util.FogParameters;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;

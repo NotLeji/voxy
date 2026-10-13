@@ -1,9 +1,9 @@
 package me.cortex.voxy.client.config;
 
-import net.caffeinemc.mods.sodium.api.config.ConfigState;
-import net.caffeinemc.mods.sodium.api.config.StorageEventHandler;
-import net.caffeinemc.mods.sodium.api.config.option.*;
-import net.caffeinemc.mods.sodium.api.config.structure.*;
+import me.jellysquid.mods.sodium.api.config.ConfigState;
+import me.jellysquid.mods.sodium.api.config.StorageEventHandler;
+import me.jellysquid.mods.sodium.api.config.option.*;
+import me.jellysquid.mods.sodium.api.config.structure.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.Identifier;

@@ -8,12 +8,12 @@ import me.cortex.voxy.client.core.SSAO;
 import me.cortex.voxy.client.core.util.IrisUtil;
 import me.cortex.voxy.common.util.cpu.CpuLayout;
 import me.cortex.voxy.commonImpl.VoxyCommon;
-import net.caffeinemc.mods.sodium.api.config.ConfigEntryPoint;
-import net.caffeinemc.mods.sodium.api.config.ConfigState;
-import net.caffeinemc.mods.sodium.api.config.option.OptionFlag;
-import net.caffeinemc.mods.sodium.api.config.option.OptionImpact;
-import net.caffeinemc.mods.sodium.api.config.option.Range;
-import net.caffeinemc.mods.sodium.api.config.structure.ConfigBuilder;
+import me.jellysquid.mods.sodium.api.config.ConfigEntryPoint;
+import me.jellysquid.mods.sodium.api.config.ConfigState;
+import me.jellysquid.mods.sodium.api.config.option.OptionFlag;
+import me.jellysquid.mods.sodium.api.config.option.OptionImpact;
+import me.jellysquid.mods.sodium.api.config.option.Range;
+import me.jellysquid.mods.sodium.api.config.structure.ConfigBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
