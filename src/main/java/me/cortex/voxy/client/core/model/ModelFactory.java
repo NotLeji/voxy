@@ -22,7 +22,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
@@ -820,10 +819,6 @@ public class ModelFactory {
                 return LevelLightEngine.EMPTY;
             }
 
-            @Override
-            public CardinalLighting cardinalLighting() {
-                return CardinalLighting.DEFAULT;
-            }
 
             @Override
             public int getBlockTint(BlockPos pos, ColorResolver colorResolver) {
@@ -875,10 +870,6 @@ public class ModelFactory {
                 return LevelLightEngine.EMPTY;
             }
 
-            @Override
-            public CardinalLighting cardinalLighting() {
-                return CardinalLighting.DEFAULT;
-            }
 
             @Override
             public int getBlockTint(BlockPos pos, ColorResolver colorResolver) {
