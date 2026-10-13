@@ -2,13 +2,12 @@ package me.cortex.voxy.client.core.model.bakery;
 
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import me.cortex.voxy.client.core.model.BakeLayer;
 import me.cortex.voxy.common.util.MemoryBuffer;
-import net.minecraft.client.model.geom.builders.UVPair;
-import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
-import net.minecraft.client.renderer.texture.MipmapStrategy;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import org.lwjgl.system.MemoryUtil;
 
+// 1.20.1 backport: Uses 1.20.1 BakedQuad API (getVertices() int array).
 public final class ReuseVertexConsumer implements VertexConsumer {
     public static final int VERTEX_FORMAT_SIZE = 24;
     private MemoryBuffer buffer = new MemoryBuffer(8192);
@@ -92,26 +91,32 @@ public final class ReuseVertexConsumer implements VertexConsumer {
         return null;
     }
 
-    public ReuseVertexConsumer quad(BakedQuad quad) {
-        return this.quad(quad, false);
+    public ReuseVertexConsumer quad(BakedQuad quad, BakeLayer layer) {
+        return this.quad(quad, false, layer);
     }
 
-    public ReuseVertexConsumer quad(BakedQuad quad, boolean forceSolid) {
+    public ReuseVertexConsumer quad(BakedQuad quad, boolean forceSolid, BakeLayer layer) {
         int meta = 0;
-        meta |= forceSolid?0:(quad.materialInfo().layer()!=ChunkSectionLayer.SOLID?1:0);//has discard
-        meta |= quad.materialInfo().isTinted()?4:0;//has tinting
+        meta |= forceSolid?0:(layer!=BakeLayer.SOLID?1:0);//has discard
+        meta |= (quad.getTintIndex() != -1)?4:0;//has tinting
         return this.quad(quad, meta);
     }
 
     public ReuseVertexConsumer quad(BakedQuad quad, int metadata) {
-        this.anyShaded |= quad.materialInfo().shade();
-        this.anyDarkendTex |= quad.materialInfo().sprite().contents().mipmapStrategy == MipmapStrategy.DARK_CUTOUT;
+        this.anyShaded |= quad.hasAmbientOcclusion();
+        // 1.20.1: MipmapStrategy doesn't exist; skip dark cutout detection
         this.ensureCanPut();
+        int[] vertices = quad.getVertices();
+        // 1.20.1 vertex format: 8 ints per vertex (x,y,z at 0-2, uv at 4-5 as float bits)
         for (int i = 0; i < 4; i++) {
-            var pos = quad.position(i);
-            this.addVertex(pos.x(), pos.y(), pos.z());
-            long puv = quad.packedUV(i);
-            this.setUv(UVPair.unpackU(puv),UVPair.unpackV(puv));
+            int base = i * 8;
+            float x = Float.intBitsToFloat(vertices[base + 0]);
+            float y = Float.intBitsToFloat(vertices[base + 1]);
+            float z = Float.intBitsToFloat(vertices[base + 2]);
+            this.addVertex(x, y, z);
+            float u = Float.intBitsToFloat(vertices[base + 4]);
+            float v = Float.intBitsToFloat(vertices[base + 5]);
+            this.setUv(u, v);
 
             this.meta(metadata|this.globalOrMetadata);
         }
