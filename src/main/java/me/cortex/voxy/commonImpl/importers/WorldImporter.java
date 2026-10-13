@@ -49,7 +49,7 @@ public class WorldImporter implements IDataImporter {
     private final WorldEngine world;
     private final PalettedContainerRO<Holder<Biome>> defaultBiomeProvider;
     private final Codec<PalettedContainerRO<Holder<Biome>>> biomeCodec;
-    private final Codec<PalettedContainer<BlockState>> blockStateCodec;
+    private final Codec<PalettedContainerRO<BlockState>> blockStateCodec;
     private final AtomicInteger estimatedTotalChunks = new AtomicInteger();//Slowly converges to the true value
     private final AtomicInteger totalChunks = new AtomicInteger();
     private final AtomicInteger chunksProcessed = new AtomicInteger();
@@ -64,7 +64,7 @@ public class WorldImporter implements IDataImporter {
         this.service = sm.createService(()->new Pair<>(()->this.jobQueue.poll().run(), ()->{}), 3, "World importer", runChecker);
 
         var biomeRegistry = mcWorld.registryAccess().registryOrThrow(Registries.BIOME);
-        var defaultBiomeHolder = biomeRegistry.getOrThrow(Biomes.PLAINS);
+        var defaultBiomeHolder = biomeRegistry.getHolderOrThrow(Biomes.PLAINS);
         this.defaultBiomeProvider = new PalettedContainerRO<Holder<Biome>>() {
             @Override
             public Holder<Biome> get(int x, int y, int z) {
@@ -93,7 +93,8 @@ public class WorldImporter implements IDataImporter {
             }
 
             @Override
-            public void pack(net.minecraft.core.IdMap<Holder<Biome>> idMap, net.minecraft.world.level.chunk.PalettedContainer.Strategy strategy) {
+            public net.minecraft.world.level.chunk.PalettedContainerRO.PackedData<Holder<Biome>> pack(net.minecraft.core.IdMap<Holder<Biome>> idMap, net.minecraft.world.level.chunk.PalettedContainer.Strategy strategy) {
+                return null;
             }
 
 
