@@ -98,7 +98,7 @@ public class WorldImporter implements IDataImporter {
             }
 
             @Override
-            public net.minecraft.world.level.chunk.PalettedContainerRO<Holder<Biome>> recreate() {
+            public net.minecraft.world.level.chunk.PalettedContainerRO recreate() {
                 return this;
             }
 
