@@ -86,40 +86,16 @@ public class WorldImporter implements IDataImporter {
                 return 0;
             }
 
-            @Override
-            public int bitsPerEntry() {
-                return 0;
-            }
 
             @Override
             public boolean maybeHas(Predicate<Holder<Biome>> predicate) {
                 return predicate.test(defaultBiome);
             }
 
-            @Override
-            public void forEachInPalette(Consumer<Holder<Biome>> consumer) {
-                consumer.accept(defaultBiome);
-            }
 
-            @Override
-            public void count(PalettedContainer.CountConsumer<Holder<Biome>> counter) {
-                counter.accept(defaultBiome, 1);
-            }
 
-            @Override
-            public PalettedContainer<Holder<Biome>> copy() {
-                return null;
-            }
 
-            @Override
-            public PalettedContainer<Holder<Biome>> recreate() {
-                return null;
-            }
 
-            @Override
-            public PackedData<Holder<Biome>> pack(Strategy<Holder<Biome>> provider) {
-                return null;
-            }
         };
 
         var factory = PalettedContainerFactory.create(mcWorld.registryAccess());
