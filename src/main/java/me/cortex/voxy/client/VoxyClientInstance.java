@@ -1,6 +1,5 @@
 package me.cortex.voxy.client;
 
-import me.cortex.voxy.client.compat.FlashbackCompat;
 import me.cortex.voxy.client.config.VoxyConfig;
 import me.cortex.voxy.client.core.RenderResourceReuse;
 import me.cortex.voxy.client.mixin.sodium.AccessorSodiumWorldRenderer;
@@ -25,12 +24,10 @@ public class VoxyClientInstance extends VoxyInstance {
 
     public VoxyClientInstance() {
         {
-            var path = FlashbackCompat.getReplayStoragePath();
-            this.noIngestOverride = path != null;
-            if (path == null) {
-                path = getBasePath();
-            }
-            var basePath = this.basePath = path.normalize();
+            // Flashback compat dropped for 1.20.1 (no Flashback release for 1.20.x):
+            // always use the default base path.
+            this.noIngestOverride = false;
+            var basePath = this.basePath = getBasePath().normalize();
             this.config = StorageConfigUtil.getCreateStorageConfig(Config.class, c->c.version==1&&c.sectionStorageConfig!=null, ()->DEFAULT_STORAGE_CONFIG, basePath);
         }
         super();
