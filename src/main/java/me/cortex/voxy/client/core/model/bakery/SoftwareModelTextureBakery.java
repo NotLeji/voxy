@@ -135,6 +135,11 @@ public class SoftwareModelTextureBakery {
                 return 1.0f;
             }
 
+            @Override
+            public int getMinBuildHeight() {
+                return -64;
+            }
+
 
             @Override
             public int getBlockTint(BlockPos pos, ColorResolver colorResolver) {
