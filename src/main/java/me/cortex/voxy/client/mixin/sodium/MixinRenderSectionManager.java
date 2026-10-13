@@ -37,7 +37,7 @@ public class MixinRenderSectionManager {
     @Unique
     private static final boolean BOBBY_INSTALLED = FabricLoader.getInstance().isModLoaded("bobby");
 
-    @Shadow @Final private ClientLevel level;
+    @Shadow @Final private ClientLevel world;
 
     @Unique private long cachedChunkPos = -1;
     @Unique private int cachedChunkStatus;
@@ -47,7 +47,7 @@ public class MixinRenderSectionManager {
     @Inject(method = "<init>", at = @At("TAIL"))
     private void voxy$initBottomY(ClientLevel level, int renderDistance,
                                    CommandList commandList, CallbackInfo ci) {
-        this.bottomSectionY = this.level.getMinY() >> 4;
+        this.bottomSectionY = this.world.getMinY() >> 4;
     }
 
     // Replacement for renderOutOfGraph + readRenderListFromTree hooks (methods don't exist in 0.5.x):
@@ -66,7 +66,7 @@ public class MixinRenderSectionManager {
     @Inject(method = "onChunkRemoved", at = @At("HEAD"))
     private void voxy$injectIngest(int x, int z, CallbackInfo ci) {
         if (VoxyConfig.CONFIG.ingestEnabled && !BOBBY_INSTALLED) {
-            var cccm = (ICheekyClientChunkCache) this.level.getChunkSource();
+            var cccm = (ICheekyClientChunkCache) this.world.getChunkSource();
             if (cccm != null) {
                 var chunk = cccm.voxy$cheekyGetChunk(x, z);
                 if (chunk != null) {
@@ -78,8 +78,8 @@ public class MixinRenderSectionManager {
 
     @Inject(method = "onChunkAdded", at = @At("HEAD"))
     private void voxy$ingestOnAdd(int x, int z, CallbackInfo ci) {
-        if (this.level != null && VoxyConfig.CONFIG.ingestEnabled) {
-            var cccm = this.level.getChunkSource();
+        if (this.world != null && VoxyConfig.CONFIG.ingestEnabled) {
+            var cccm = this.world.getChunkSource();
             if (cccm != null) {
                 var chunk = cccm.getChunk(x, z, ChunkStatus.FULL, false);
                 if (chunk != null) {
@@ -105,7 +105,8 @@ public class MixinRenderSectionManager {
         int x = section.getChunkX(), y = section.getChunkY(), z = section.getChunkZ();
 
         // AccessorChunkTracker still valid: chunkStatus field exists in 0.5.x.
-        var tracker = ((AccessorChunkTracker) ChunkTrackerHolder.get(this.level))
+        // 1.20.1: call interface method directly to avoid intermediary signature issue
+        var tracker = ((AccessorChunkTracker) ((ChunkTrackerHolder) this.world).sodium$getTracker())
             .getChunkStatus();
         long key = ChunkPos.asLong(x, z);
         if (key != this.cachedChunkPos) {
@@ -113,11 +114,11 @@ public class MixinRenderSectionManager {
             this.cachedChunkStatus = tracker.getOrDefault(key, 0);
         }
         if (this.cachedChunkStatus == 3) { // chunk + neighbors ready
-            var cccm = this.level.getChunkSource();
+            var cccm = this.world.getChunkSource();
             var chunk = cccm.getChunk(x, z, ChunkStatus.FULL, false);
             if (chunk != null) {
                 var sec = chunk.getSection(y - this.bottomSectionY);
-                var lp = this.level.getLightEngine();
+                var lp = this.world.getLightEngine();
                 var csp = SectionPos.of(x, y, z);
                 var blp = lp.getLayerListener(LightLayer.BLOCK).getDataLayerData(csp);
                 var slp = lp.getLayerListener(LightLayer.SKY).getDataLayerData(csp);
