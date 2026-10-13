@@ -398,12 +398,12 @@ public class Mapper {
                         Logger.error("Could not decode blockstate setting to air. id:" + id + " error: " + state.error().get().message());
                         return new StateEntry(id, Blocks.AIR.defaultBlockState());
                     } else {
-                        Logger.info("Fixed blockstate to: " + state.getOrThrow());
+                        Logger.info("Fixed blockstate to: " + state.result().orElseThrow());
                         forceResave[0] |= true;
-                        return new StateEntry(id, state.getOrThrow());
+                        return new StateEntry(id, state.result().orElseThrow());
                     }
                 } else {
-                    return new StateEntry(id, state.getOrThrow());
+                    return new StateEntry(id, state.result().orElseThrow());
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
