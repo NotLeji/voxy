@@ -1,15 +1,11 @@
 package me.cortex.voxy.client.core;
 
-import com.mojang.blaze3d.pipeline.DepthStencilState;
-import com.mojang.blaze3d.platform.CompareOp;
-import com.mojang.blaze3d.systems.RenderSystem;
 import me.cortex.voxy.client.core.gl.shader.Shader;
-import me.cortex.voxy.client.core.util.IrisUtil;
-import me.cortex.voxy.client.iris.IGetIrisVoxyPipelineData;
-import net.irisshaders.iris.Iris;
 
 import static org.lwjgl.opengl.GL11C.*;
 
+// 1.20.1 backport: Simplified. 1.20.1 uses OpenGL -1..1 depth (not 0..1), standard GL_LESS depth.
+// Iris integration stubbed.
 public record RenderProperties(boolean isZero2One, boolean isReverseZ, boolean useBlockAtlasUVs) {
 
     public <T extends Shader.Builder<J>, J extends Shader> T apply(T builder) {
@@ -37,42 +33,8 @@ public record RenderProperties(boolean isZero2One, boolean isReverseZ, boolean u
         return this.isReverseZ?1.0f:0.0f;
     }
 
-
-
-
-
-
-
-    private static boolean irisUseBlockAtlasUv() {
-        var irisPipe = Iris.getPipelineManager().getPipelineNullable();
-        if (irisPipe == null) {
-            return false;
-        }
-        if (irisPipe instanceof IGetIrisVoxyPipelineData getVoxyPipeData) {
-            var pipeData = getVoxyPipeData.voxy$getPipelineData();
-            if (pipeData == null) {
-                return false;
-            }
-            //return pipeData.useBlockAtlasUV;
-            return false;
-        }
-        return false;
-    }
-
-    private static boolean useReverseZ() {
-        return IrisUtil.irisShaderPackEnabled()?false:DepthStencilState.DEFAULT.depthTest().equals(CompareOp.GREATER_THAN_OR_EQUAL);
-    }
-
     public static RenderProperties getRenderProperties() {
-        RenderProperties properties = new RenderProperties(
-                RenderSystem.getDevice().getDeviceInfo().isZZeroToOne(),
-                useReverseZ(),
-                false);
-
-        if (IrisUtil.IRIS_INSTALLED && IrisUtil.SHADER_SUPPORT) {
-            properties = new RenderProperties(properties.isZero2One(), properties.isReverseZ(), irisUseBlockAtlasUv());
-        }
-
-        return properties;
+        // 1.20.1: OpenGL depth range is -1..1 (isZero2One=false), standard depth func (isReverseZ=false)
+        return new RenderProperties(false, false, false);
     }
 }
