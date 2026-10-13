@@ -125,7 +125,7 @@ public class MemoryStorageBackend extends StorageBackend {
     @Override
     public void close() {
         Streams.of(this.maps).map(map -> map.values()).flatMap(ObjectCollection::stream).forEach(MemoryBuffer::free);
-        this.idMappings.values().forEach(MemoryUtil::memFree);
+        this.idMappings.values().forEach(b -> MemoryUtil.memFree(b));
     }
 
     public static class Config extends StorageConfig {
