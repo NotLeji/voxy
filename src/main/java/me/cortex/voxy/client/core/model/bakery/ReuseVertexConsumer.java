@@ -85,6 +85,10 @@ public final class ReuseVertexConsumer implements VertexConsumer {
         // 1.20.1: required by VertexConsumer
     }
 
+    public void endVertex() {
+        // 1.20.1: required by VertexConsumer
+    }
+
     public void unsetDefaultColor() {
         // 1.20.1: required by VertexConsumer interface
     }
