@@ -17,7 +17,7 @@ import me.jellysquid.mods.sodium.client.render.chunk.terrain.TerrainRenderPass;
 import me.jellysquid.mods.sodium.client.render.chunk.vertex.format.ChunkVertexType;
 import me.jellysquid.mods.sodium.client.render.viewport.CameraTransform;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderTarget;
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
