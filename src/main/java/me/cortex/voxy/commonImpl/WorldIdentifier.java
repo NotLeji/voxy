@@ -59,7 +59,7 @@ public class WorldIdentifier {
     private static <T> boolean equal(ResourceKey<T> a, ResourceKey<T> b) {
         if (a == b) return true;
         if (a == null || b == null) return false;
-        return a.registry().equals(b.registry()) && a.identifier().equals(b.identifier());
+        return a.registry().equals(b.registry()) && a.location().equals(b.location());
     }
 
     //Quick access utility method to get or create a world object in the current instance
@@ -127,7 +127,7 @@ public class WorldIdentifier {
 
     private static long registryKeyHashCode(ResourceKey<?> key) {
         var A = key.registry();
-        var B = key.identifier();
+        var B = key.location();
         int a = A==null?0:A.hashCode();
         int b = B==null?0:B.hashCode();
         return (Integer.toUnsignedLong(a)<<32)|Integer.toUnsignedLong(b);
@@ -162,7 +162,7 @@ public class WorldIdentifier {
 
     @Override
     public String toString() {
-        return "WorldIdentifier[" + this.key.identifier().toString() + ", " + this.biomeSeed + ", " + this.dimension.identifier().toString() + ']';
+        return "WorldIdentifier[" + this.key.location().toString() + ", " + this.biomeSeed + ", " + this.dimension.location().toString() + ']';
     }
 
     public static class GsonAdapter extends TypeAdapter<WorldIdentifier> {
@@ -175,13 +175,13 @@ public class WorldIdentifier {
             writer.beginObject();
 
             writer.name("key");
-            writer.value(identifier.key.identifier().toString());
+            writer.value(identifier.key.location().toString());
 
             writer.name("biomeSeed");
             writer.value(identifier.biomeSeed);
 
             writer.name("dimension");
-            writer.value(identifier.dimension.identifier().toString());
+            writer.value(identifier.dimension.location().toString());
 
             writer.endObject();
         }
