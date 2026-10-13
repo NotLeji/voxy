@@ -130,6 +130,11 @@ public class SoftwareModelTextureBakery {
                 return 0;
             }
 
+            @Override
+            public float getShade(net.minecraft.core.Direction direction, boolean shade) {
+                return 1.0f;
+            }
+
 
             @Override
             public int getBlockTint(BlockPos pos, ColorResolver colorResolver) {
