@@ -65,7 +65,7 @@ public class WorldImporter implements IDataImporter {
 
         var biomeRegistry = mcWorld.registryAccess().registryOrThrow(Registries.BIOME);
         var defaultBiomeHolder = biomeRegistry.getOrThrow(Biomes.PLAINS);
-        this.defaultBiomeProvider = new PalettedContainerRO<>() {
+        this.defaultBiomeProvider = new PalettedContainerRO<Holder<Biome>>() {
             @Override
             public Holder<Biome> get(int x, int y, int z) {
                 return defaultBiomeHolder;
