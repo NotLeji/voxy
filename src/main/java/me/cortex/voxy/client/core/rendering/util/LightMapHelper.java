@@ -27,6 +27,7 @@ public class LightMapHelper {
     }
 
     public static int getLightmapTextureId() {
-        return ((com.mojang.blaze3d.opengl.GlTexture)(Minecraft.getInstance().gameRenderer.levelLightmap().texture())).glId();
+        // 1.20.1: get texture ID from LightTexture
+        return Minecraft.getInstance().gameRenderer.lightTexture().lightTexture.getId();
     }
 }
