@@ -78,9 +78,11 @@ public class ColumnStreamedBoundStore implements IBoundStore {
         }
 
         int count = 0;
-        var tracker = ChunkTrackerHolder.get(Minecraft.getInstance().level);
-        if (tracker != null) {
-            var iter = tracker.getReadyChunks().longIterator();
+        // 1.20.1: ChunkTrackerHolder disabled due to intermediary mapping issues
+        // TODO: Re-enable once Sodium mappings are fixed
+        var tracker = (Object) null;
+        if (false) {
+            var iter = ((me.jellysquid.mods.sodium.client.world.ChunkTracker) tracker).getReadyChunks().longIterator();
             while (iter.hasNext()) {
                 long column = iter.nextLong();
                 //Emit column
