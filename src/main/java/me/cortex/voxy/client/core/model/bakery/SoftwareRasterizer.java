@@ -1,6 +1,7 @@
 package me.cortex.voxy.client.core.model.bakery;
 
 // 1.20.1 backport: Sodium 0.5.x has no api.util.ColorMixer (added in 0.6+). Inlined simple blend.
+import me.cortex.voxy.common.util.BitUtils;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
