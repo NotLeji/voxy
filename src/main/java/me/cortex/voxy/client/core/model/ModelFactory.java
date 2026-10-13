@@ -311,7 +311,7 @@ public class ModelFactory {
             if (mcbiomeEntry == null) {
                 Logger.warn("Could not find biome: " + biomeEntry.biome + " using default");
             }
-            var res = this.addBiome0(biomeEntry.id, mcbiomeEntry != null ? mcbiomeEntry.value() : DEFAULT_BIOME);
+            var res = this.addBiome0(biomeEntry.id, mcbiomeEntry != null ? mcbiomeEntry : DEFAULT_BIOME);
             if (res != null) {
                 this.uploadResults.add(res);
             }
